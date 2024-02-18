@@ -1,39 +1,70 @@
-## Micronaut 4.3.2 Documentation
+# Gigachat-CLI Project
+The `Gigachat-CLI` project is a command-line `gRPC` client for interacting with the [Gigachat](https://developers.sber.ru/docs/ru/gigachat/api/reference/rest/gigachat-api) service. Written in java using `micronaut` framework.
+## Installing
+- To use `GigaChat CLI`, download the [latest version](https://github.com/owpk/gigachat-grpc-client/releases/latest)  
+- For manual installation, see section ["Build"](#build2)
 
-- [User Guide](https://docs.micronaut.io/4.3.2/guide/index.html)
-- [API Reference](https://docs.micronaut.io/4.3.2/api/index.html)
-- [Configuration Reference](https://docs.micronaut.io/4.3.2/guide/configurationreference.html)
-- [Micronaut Guides](https://guides.micronaut.io/index.html)
+## Configuration
+
+You need to register account and retrieve `Client ID` and `Client Secret` encoded in Base 64 string.
+Specify encoded credentials in the `gigachat.composedCredentials` property of the configuration file. Create or change a configuration using the `config -d <your credentials hash>` command.
+
+### Please look for the gigachat api documentation for more information
+
+[official GigaChat API documentation](https://developers.sber.ru/docs/ru/gigachat/api/reference/rest/post-token).
+
+## Usage 
+
+### Base command
+
+```shell
+gigachat
+```
+The main command for interacting with GigaChat. Use `-h` or `--help` for more information.
+
+### Chat
+
+```shell
+gigachat chat <your query>
+```
+Initiates a chat with GigaChat. Use `-u` or `--unary` to get a single response. The default response type is stream.
+
+### Config
+
+```shell
+gigachat config -s
+```
+Shows the current configuration settings. Use `-c` or `--create` to create a default configuration, `-f` or `--force` to force the creation/overwrite of a default configuration, `-d` or `--credentials` to set the credentials property.
+
+### Model
+
+```shell
+gigachat model
+```
+Getting a list of available chat models
+
 ---
 
-- [Shadow Gradle Plugin](https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow)
-- [Micronaut Gradle Plugin documentation](https://micronaut-projects.github.io/micronaut-gradle-plugin/latest/)
-- [GraalVM Gradle Plugin documentation](https://graalvm.github.io/native-build-tools/latest/gradle-plugin.html)
-## Feature coherence documentation
+# Build native image
+To build a project using GraalVM native image, you will need to install GraalVM and configure it for your project. Here are the general steps:
 
-- [Micronaut Coherence documentation](https://micronaut-projects.github.io/micronaut-coherence/latest/guide/)
+#### Install GraalVM: 
+Download and install GraalVM from the official website: [GraalVM Downloads](https://www.graalvm.org/downloads/).
+Install native-image: After installing GraalVM, make sure you have native-image installed. If not, run the following command at the command prompt:
 
-- [https://coherence.java.net/](https://coherence.java.net/)
+```shell
+gu install native-image
+```
 
+#### <a name="build2"></a> Build the project: 
+Then run the command to build the native image of your project. 
+```shell
+./gradlew nativeBuild --info
+```
 
-## Feature coherence-grpc-client documentation
-
-- [Micronaut Coherence gRPC Client documentation](https://micronaut-projects.github.io/micronaut-coherence/latest/guide/#grpc)
-
-- [https://coherence.java.net/](https://coherence.java.net/)
-
-
-## Feature lombok documentation
-
-- [Micronaut Project Lombok documentation](https://docs.micronaut.io/latest/guide/index.html#lombok)
-
-- [https://projectlombok.org/features/all](https://projectlombok.org/features/all)
-
-
-## Feature micronaut-aot documentation
-
-- [Micronaut AOT documentation](https://micronaut-projects.github.io/micronaut-aot/latest/guide/)
-
-
-# gigachat-grpc-client
-Command line sber 'GigaChat' neural network gRPC client
+#### Running native image: 
+After a successful build, you can run your application compiled in native image.
+```shell
+cd build/native/nativImage
+./gigachat -h
+```
