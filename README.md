@@ -35,3 +35,5 @@
 - [Micronaut AOT documentation](https://micronaut-projects.github.io/micronaut-aot/latest/guide/)
 
 
+# gigachat-grpc-client
+Command line sber 'GigaChat' neural network gRPC client
