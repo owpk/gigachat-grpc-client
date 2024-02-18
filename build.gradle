@@ -1,0 +1,93 @@
+plugins {
+    id "com.github.johnrengelman.shadow" version "8.1.1"
+    id "io.micronaut.application" version "4.3.2"
+    id "io.micronaut.aot" version "4.3.2"
+    id "com.google.protobuf" version "0.9.4"
+}
+
+version = "0.1"
+group = "owpk"
+
+repositories {
+    mavenCentral()
+}
+
+def grpcVersion = '1.61.0'
+def protobufVersion = '3.25.1'
+
+dependencies {
+    annotationProcessor("info.picocli:picocli-codegen")
+    annotationProcessor("org.projectlombok:lombok")
+    annotationProcessor("io.micronaut.serde:micronaut-serde-processor")
+    // https://mvnrepository.com/artifact/com.squareup.okhttp/okhttp
+    implementation 'com.squareup.okhttp:okhttp:2.7.5'
+
+    implementation("io.micronaut:micronaut-jackson-databind")
+    compileOnly("org.projectlombok:lombok")
+    compileOnly "org.apache.tomcat:annotations-api:6.0.53"
+    runtimeOnly("ch.qos.logback:logback-classic")
+
+//    implementation 'com.konghq:unirest-java:3.14.5'
+    implementation("info.picocli:picocli")
+    implementation("io.micronaut.picocli:micronaut-picocli")
+    implementation("io.micronaut.serde:micronaut-serde-jackson")
+
+    implementation "com.google.protobuf:protobuf-java-util:${protobufVersion}"
+    implementation group: 'com.google.protobuf', name: 'protobuf-java', version: '3.16.3'
+    implementation "io.grpc:grpc-netty:${grpcVersion}"
+    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+    implementation "io.grpc:grpc-services:${grpcVersion}"
+    implementation "io.grpc:grpc-stub:${grpcVersion}"
+    implementation "io.grpc:grpc-auth:${grpcVersion}"
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs 'build/generated/source/proto/main/grpc'
+            srcDirs 'build/generated/source/proto/main/java'
+        }
+    }
+}
+
+application {
+    mainClass.set("owpk.Application")
+}
+
+java {
+    sourceCompatibility = JavaVersion.toVersion("17")
+    targetCompatibility = JavaVersion.toVersion("17")
+}
+
+graalvmNative.toolchainDetection = false
+
+micronaut {
+    runtime("netty")
+    testRuntime("junit5")
+    processing {
+        incremental(true)
+        annotations("owpk.*")
+    }
+    aot {
+        optimizeServiceLoading = false
+        convertYamlToJava = false
+        precomputeOperations = true
+        cacheEnvironment = true
+        optimizeClassLoading = true
+        deduceEnvironment = true
+        optimizeNetty = true
+    }
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:${protobufVersion}"
+    }
+    plugins {
+        grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}" }
+    }
+    generateProtoTasks {
+        all()*.plugins { grpc {} }
+    }
+}
+

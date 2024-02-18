@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package gigachat.v1;
+
+option go_package = "./;protocol";
+
+service ChatService {
+  rpc Chat (ChatRequest) returns (ChatResponse);
+  rpc ChatStream (ChatRequest) returns (stream ChatResponse);
+}
+
+message ChatRequest {
+  ChatOptions options = 1;
+  string model = 2;
+  repeated Message messages = 3;
+}
+
+message ChatOptions {
+  float temperature = 1;
+  float top_p = 2;
+  int32 max_alternatives = 3;
+  int32 max_tokens = 4;
+  float repetition_penalty = 5;
+  float update_interval = 6;
+  repeated string flags = 7;
+}
+
+message Message {
+  string role = 1;
+  string content = 2;
+  string unprocessed_content = 3;
+}
+
+message ChatResponse {
+  repeated Alternative alternatives = 1;
+  Usage usage = 2;
+  ModelInfo model_info = 3;
+  int64 timestamp = 4;
+}
+
+message Alternative {
+  Message message = 1;
+  string finish_reason = 2;
+  int32 index = 3;
+}
+
+message Usage {
+  int32 prompt_tokens = 1;
+  int32 completion_tokens = 2;
+  int32 total_tokens = 3;
+}
+
+message ModelInfo {
+  string name = 1;
+  string version = 2;
+}
+
+service ModelsService {
+  rpc ListModels (ListModelsRequest) returns (ListModelsResponse);
+  rpc RetrieveModel (RetrieveModelRequest) returns (RetrieveModelResponse);
+}
+
+message ListModelsRequest {}
+
+message ListModelsResponse {
+  repeated Model models = 1;
+}
+
+message Model {
+ string name = 1;
+ string object = 2;
+ string owned_by = 3;
+}
+
+message RetrieveModelRequest {
+  string name = 1;
+}
+
+message RetrieveModelResponse {
+  Model model = 1;
+}
