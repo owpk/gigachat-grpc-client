@@ -34,7 +34,8 @@ public class AuthRestClientImpl implements AuthRestClient {
     public JwtRestResponse authorize(String scope, String basicAuth) {
         try {
             var body = RequestBody.create(MediaType.parse("application/x-www-form-urlencoded"), "scope=" + scope);
-            log.info("Sending authorization request: " + body);
+            log.info("Sending authorization request...");
+
             var request = new Request.Builder()
                     .header("Content-Type", "application/x-www-form-urlencoded")
                     .header("Accept", "application/json")

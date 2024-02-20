@@ -6,7 +6,7 @@ import owpk.LoggingUtils;
 import owpk.storage.SettingsStore;
 import picocli.CommandLine;
 
-@CommandLine.Command(name = "config", description = "Create or show config.")
+@CommandLine.Command(name = "config", aliases = {"cfg", "conf"}, description = "Create or show config.")
 @Slf4j
 public class ConfigCommand implements Runnable {
     private final SettingsStore settingsStore;
@@ -36,7 +36,8 @@ public class ConfigCommand implements Runnable {
                     .forEach((k, v) -> System.out.println(k + " : " + v));
         else if (createConfig) {
             if (force) {
-                settingsStore.createDefaults();
+                settingsStore.writeDefaultProperties();
+                System.out.println("Settings file rewritten successfully!");
             } else {
                 var file = settingsStore.getSettingsFile();
                 if (settingsStore.getSettingsFile().exists()) {

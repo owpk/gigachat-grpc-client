@@ -3,6 +3,11 @@ plugins {
     id "io.micronaut.application" version "4.3.2"
     id "io.micronaut.aot" version "4.3.2"
     id "com.google.protobuf" version "0.9.4"
+    id 'application'
+}
+
+application {
+    mainClass = "owpk.Application"
 }
 
 version = "0.1"

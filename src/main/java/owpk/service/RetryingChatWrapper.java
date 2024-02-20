@@ -28,17 +28,16 @@ public class RetryingChatWrapper {
         } catch (StatusRuntimeException e) {
             log.info("Catch grpc status exception: " + e.getStatus());
             if (e.getStatus().getCode().equals(Status.UNAUTHENTICATED.getCode())) {
+                log.info("Seems jwt token is corrupted. Refreshing token...");
                 try {
                     authorizationRestService.refreshToken();
                     callable.run();
                 } catch (Exception ex) {
                     throw new RuntimeException("Error while refreshing token", ex);
                 }
-            }
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            } else throw e;
+        } catch (Throwable e) {
+            log.error("Catch retrying exception: " + e);
         }
     }
-
 }

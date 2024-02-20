@@ -10,13 +10,14 @@ import owpk.api.AuthRestClient;
 import owpk.api.AuthRestClientImpl;
 import owpk.grpc.GigaChatGRpcClient;
 import owpk.service.AuthorizationRestService;
+import owpk.service.ChatService;
+import owpk.service.RetryingChatWrapper;
 import owpk.storage.SettingsStore;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import java.security.cert.CertificateException;
 
 @Factory
 @Slf4j
@@ -31,15 +32,9 @@ public class BeanFactory {
     @Singleton
     @Order(value = Integer.MAX_VALUE)
     public SettingsStore settingsStore() {
-        var bean = new SettingsStore();
-        try {
-            bean.init();
-            bean.setDefaults();
-        } catch (Exception e) {
-            log.error("Error while init settings.", e);
-            throw new RuntimeException(e);
-        }
-        return bean;
+        var settings = new SettingsStore();
+        settings.init();
+        return settings;
     }
 
     @Singleton
@@ -63,11 +58,11 @@ public class BeanFactory {
         return new TrustManager[]{
                 new X509TrustManager() {
                     @Override
-                    public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+                    public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
                     }
 
                     @Override
-                    public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+                    public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {
                     }
 
                     @Override
@@ -91,6 +86,12 @@ public class BeanFactory {
     @Singleton
     public GigaChatGRpcClient gRpcClient(AuthorizationRestService authorizationRestService) throws SSLException {
         return new GigaChatGRpcClient(settings.getTarget(), authorizationRestService);
+    }
+
+    @Singleton
+    public RetryingChatWrapper retryingChatWrapper(ChatService chatService,
+                                                   AuthorizationRestService authorizationRestService) {
+        return new RetryingChatWrapper(chatService, authorizationRestService);
     }
 
 }

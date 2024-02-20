@@ -6,7 +6,7 @@ import owpk.LoggingUtils;
 import owpk.grpc.GigaChatGRpcClient;
 import picocli.CommandLine;
 
-@CommandLine.Command(name = "model", description = "Search questions matching criteria.")
+@CommandLine.Command(name = "model", aliases = {"m"}, description = "Retrieve available GigaChat models")
 @Slf4j
 public class ModelCommand implements Runnable {
     private final GigaChatGRpcClient gigaChatGRpcClient;

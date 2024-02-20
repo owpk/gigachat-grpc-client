@@ -26,7 +26,9 @@ public class GigaChatCreds extends CallCredentials {
             var jwt = tokenProvider.getJwt();
             doRequest(applier, jwt);
         } catch (Throwable e) {
-            applier.fail(Status.UNAUTHENTICATED);
+            applier.fail(Status.UNAUTHENTICATED
+                    .withDescription("Failed to get JWT")
+                    .withCause(e));
         }
     }
 

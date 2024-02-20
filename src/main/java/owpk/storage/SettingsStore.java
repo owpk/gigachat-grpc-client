@@ -23,16 +23,12 @@ public class SettingsStore {
         log.info("Init application settings store: " + settingsFile.getAbsolutePath());
         properties = new Properties();
         try {
-            if (settingsFile.exists()) {
-                try (var fis = new FileInputStream(settingsFile)) {
-                    properties.load(fis);
-                }
-            } else {
-                settingsFile.createNewFile();
-                createDefaults();
+            try (var fis = new FileInputStream(settingsFile)) {
+                properties.load(fis);
             }
         } catch (IOException e) {
             log.error("Error while init properties.", e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -85,29 +81,40 @@ public class SettingsStore {
         return properties.getProperty(key);
     }
 
-    public void createDefaults() {
+    public static Properties getDefaltProperties() {
         log.info("Creating default application store properties...");
-        properties.put("gigachat.composedCredentials", "");
-        properties.put("gigachat.model", "GigaChat:latest");
-        properties.put("gigachat.target", "gigachat.devices.sberbank.ru");
-        properties.put("gigachat.jwt.accessToken", NOT_VALID_JWT);
-        properties.put("gigachat.jwt.expiresAt", "0");
-        properties.put("gigachat.authUri", "https://ngw.devices.sberbank.ru:9443/api/v2/oauth");
-        properties.put("micronaut.application.name", "gigachat-cli");
+        var props = new Properties();
+        props.put("gigachat.composedCredentials", "");
+        props.put("gigachat.model", "GigaChat:latest");
+        props.put("gigachat.target", "gigachat.devices.sberbank.ru");
+        props.put("gigachat.jwt.accessToken", NOT_VALID_JWT);
+        props.put("gigachat.jwt.expiresAt", "0");
+        props.put("gigachat.authUri", "https://ngw.devices.sberbank.ru:9443/api/v2/oauth");
+        props.put("micronaut.application.name", "gigachat-cli");
+        return props;
+    }
+
+    public void writeDefaultProperties() {
+        properties = getDefaltProperties();
         storeProps();
     }
 
     public void setProperty(String key, String value) {
+        log.info("Setting properties {} to {}", key, value);
         properties.setProperty(key, value);
         storeProps();
     }
 
-    private void storeProps() {
-        log.info("Storing properties...");
+    public static void storeProps(Properties properties, File settingsFile) {
         try (var fos = new FileOutputStream(settingsFile)) {
             properties.store(fos, null);
         } catch (IOException e) {
-            log.error("Error while storing properties.", e);
+            throw new RuntimeException(e);
         }
+    }
+
+    private void storeProps() {
+        log.info("Storing properties...");
+        storeProps(properties, settingsFile);
     }
 }

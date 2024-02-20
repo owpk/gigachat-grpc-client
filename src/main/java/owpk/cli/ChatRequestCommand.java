@@ -4,11 +4,12 @@ import jakarta.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import owpk.LoggingUtils;
 import owpk.service.ChatService;
+import owpk.service.RetryingChatWrapper;
 import picocli.CommandLine;
 
-@CommandLine.Command(name = "chat", description = "Chat with GigaChat",
-        mixinStandardHelpOptions = true)
 @Slf4j
+@CommandLine.Command(name = "chat", aliases = {"ch"}, description = "Chat with GigaChat.",
+        mixinStandardHelpOptions = true)
 public class ChatRequestCommand implements Runnable {
 
     @CommandLine.Option(names = {"-u", "--unary"},
@@ -16,10 +17,10 @@ public class ChatRequestCommand implements Runnable {
     boolean useUnary;
     @CommandLine.Parameters
     String query;
-    private final ChatService chatService;
+    private final RetryingChatWrapper chatService;
 
     @Inject
-    public ChatRequestCommand(ChatService chatService) {
+    public ChatRequestCommand(RetryingChatWrapper chatService) {
         this.chatService = chatService;
     }
 
