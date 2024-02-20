@@ -14,15 +14,10 @@ public class ChatService {
 
     private final GigaChatGRpcClient gigaChatGRpcClient;
 
-    @PostConstruct
-    private void init() {
-        SettingsStore.validate();
-    }
-    
     @Inject
-    public ChatService(GigaChatGRpcClient gigaChatGRpcClient) {
+    public ChatService(GigaChatGRpcClient gigaChatGRpcClient, SettingsStore settingsStore) {
         this.gigaChatGRpcClient = gigaChatGRpcClient;
-        SettingsStore.validate();
+        settingsStore.validate();
     }
 
     public void chat(String query) {

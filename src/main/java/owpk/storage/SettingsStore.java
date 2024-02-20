@@ -2,6 +2,7 @@ package owpk.storage;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import owpk.Application;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -9,49 +10,36 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+@Getter
 @Slf4j
 public class SettingsStore {
-    public static final SettingsStore INSTANCE = new SettingsStore();
     private static final String NOT_VALID_JWT = "empty_jwt";
-    private final String settingsHome = System.getProperty("user.home") +
-            "/.gigachat-cli/gigachat.properties";
 
-    @Getter
-    private File settingsFile;
+    private final File settingsFile = Application.settingsFile;
 
-    @Getter
     private Properties properties;
 
-
-    public static void init() {
-        log.info("Init application settings store: " + INSTANCE.settingsHome);
-        INSTANCE.properties = new Properties();
+    public void init() {
+        log.info("Init application settings store: " + settingsFile.getAbsolutePath());
+        properties = new Properties();
         try {
-            INSTANCE.settingsFile = new File(INSTANCE.settingsHome);
-            var file = INSTANCE.settingsFile;
-            var parent = file.getParentFile();
-
-            if (parent != null && !parent.exists() && !parent.mkdirs())
-                throw new IllegalStateException("Couldn't create dir: " + parent);
-
-            if (file.exists()) {
-                try (var fis = new FileInputStream(file)) {
-                    INSTANCE.properties.load(fis);
+            if (settingsFile.exists()) {
+                try (var fis = new FileInputStream(settingsFile)) {
+                    properties.load(fis);
                 }
             } else {
-                file.createNewFile();
-                INSTANCE.createDefaults();
+                settingsFile.createNewFile();
+                createDefaults();
             }
-            System.setProperty("micronaut.config.files", INSTANCE.settingsHome);
         } catch (IOException e) {
             log.error("Error while init properties.", e);
         }
     }
 
-    public static void validate() {
+    public void validate() {
         log.info("Validating application settings store properties...");
-        INSTANCE.load();
-        if (INSTANCE.getProperty("gigachat.composedCredentials").isEmpty()) {
+        load();
+        if (getProperty("gigachat.composedCredentials").isEmpty()) {
             System.out.println("""
                     Error:
                         Missing 'gigachat.composedCredentials'.
@@ -65,24 +53,24 @@ public class SettingsStore {
         }
     }
 
-    public static void setDefaults() {
+    public void setDefaults() {
         log.info("Setting default application properties...");
-        var jwtProperty = INSTANCE.getProperty("gigachat.jwt.accessToken");
+        var jwtProperty = getProperty("gigachat.jwt.accessToken");
         if (jwtProperty == null || jwtProperty.trim().isBlank()) {
-            INSTANCE.setProperty("gigachat.jwt.accessToken", NOT_VALID_JWT);
+            setProperty("gigachat.jwt.accessToken", NOT_VALID_JWT);
             log.info("Setting default 'not valid' jwt token because current value is null");
         }
-        var expiresProperty = INSTANCE.getProperty("gigachat.jwt.expiresAt");
+        var expiresProperty = getProperty("gigachat.jwt.expiresAt");
         if (expiresProperty == null || expiresProperty.trim().isBlank()) {
-            INSTANCE.setProperty("gigachat.jwt.expiresAt", "0");
+            setProperty("gigachat.jwt.expiresAt", "0");
             log.info("Setting default 0 expiration jwt time because current value is null");
         }
     }
 
     private void load() {
         if (settingsFile.exists()) {
-            try (var fis = new FileInputStream(settingsHome)) {
-                INSTANCE.properties.load(fis);
+            try (var fis = new FileInputStream(settingsFile)) {
+                properties.load(fis);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -116,7 +104,7 @@ public class SettingsStore {
 
     private void storeProps() {
         log.info("Storing properties...");
-        try (var fos = new FileOutputStream(settingsHome)) {
+        try (var fos = new FileOutputStream(settingsFile)) {
             properties.store(fos, null);
         } catch (IOException e) {
             log.error("Error while storing properties.", e);

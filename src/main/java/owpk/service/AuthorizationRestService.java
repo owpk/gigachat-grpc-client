@@ -14,13 +14,14 @@ import java.util.Date;
 public class AuthorizationRestService implements JwtTokenProvider {
     private final AuthRestClient client;
     private final AppSettings settings;
-    private final SettingsStore settingsStore = SettingsStore.INSTANCE;
+    private final SettingsStore settingsStore;
     private final String credentialsHash;
 
-    public AuthorizationRestService(AuthRestClient client, AppSettings settings) {
+    public AuthorizationRestService(AuthRestClient client, AppSettings settings, SettingsStore settingsStore) {
         this.client = client;
         this.settings = settings;
         credentialsHash = settings.getComposedCredentials();
+        this.settingsStore = settingsStore;
     }
 
     @Override

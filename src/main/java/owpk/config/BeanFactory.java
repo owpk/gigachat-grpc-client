@@ -2,12 +2,15 @@ package owpk.config;
 
 import com.squareup.okhttp.OkHttpClient;
 import io.micronaut.context.annotation.Factory;
+import io.micronaut.core.annotation.Order;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import lombok.extern.slf4j.Slf4j;
 import owpk.api.AuthRestClient;
 import owpk.api.AuthRestClientImpl;
 import owpk.grpc.GigaChatGRpcClient;
 import owpk.service.AuthorizationRestService;
+import owpk.storage.SettingsStore;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
@@ -16,12 +19,27 @@ import javax.net.ssl.X509TrustManager;
 import java.security.cert.CertificateException;
 
 @Factory
+@Slf4j
 public class BeanFactory {
     private final AppSettings settings;
 
     @Inject
     public BeanFactory(AppSettings settings) {
         this.settings = settings;
+    }
+
+    @Singleton
+    @Order(value = Integer.MAX_VALUE)
+    public SettingsStore settingsStore() {
+        var bean = new SettingsStore();
+        try {
+            bean.init();
+            bean.setDefaults();
+        } catch (Exception e) {
+            log.error("Error while init settings.", e);
+            throw new RuntimeException(e);
+        }
+        return bean;
     }
 
     @Singleton
@@ -66,8 +84,8 @@ public class BeanFactory {
     }
 
     @Singleton
-    public AuthorizationRestService authorizationRestService(AuthRestClient authRestClient) {
-        return new AuthorizationRestService(authRestClient, settings);
+    public AuthorizationRestService authorizationRestService(AuthRestClient authRestClient, SettingsStore settingsStore) {
+        return new AuthorizationRestService(authRestClient, settings, settingsStore);
     }
 
     @Singleton
