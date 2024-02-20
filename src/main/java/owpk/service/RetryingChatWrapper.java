@@ -2,7 +2,9 @@ package owpk.service;
 
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class RetryingChatWrapper {
     private final ChatService delegate;
     private final AuthorizationRestService authorizationRestService;
@@ -24,8 +26,8 @@ public class RetryingChatWrapper {
         try {
             callable.run();
         } catch (StatusRuntimeException e) {
+            log.info("Catch grpc status exception: " + e.getStatus());
             if (e.getStatus().getCode().equals(Status.UNAUTHENTICATED.getCode())) {
-                System.out.println("STATUS EXCEPTION: " + e.getMessage());
                 try {
                     authorizationRestService.refreshToken();
                     callable.run();

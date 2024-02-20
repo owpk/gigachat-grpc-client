@@ -1,9 +1,12 @@
 package owpk.cli;
 
+import lombok.extern.slf4j.Slf4j;
+import owpk.LoggingUtils;
 import owpk.storage.SettingsStore;
 import picocli.CommandLine;
 
 @CommandLine.Command(name = "config", description = "Create or show config.")
+@Slf4j
 public class ConfigCommand implements Runnable {
     @CommandLine.Option(names = {"-s", "--show"}, description = "Show this help message and exit.")
     boolean showProperties;
@@ -19,6 +22,7 @@ public class ConfigCommand implements Runnable {
 
     @Override
     public void run() {
+        LoggingUtils.cliCommandLog(this.getClass(), log);
         if (showProperties)
             SettingsStore.INSTANCE.getProperties()
                     .forEach((k, v) -> System.out.println(k + " : " + v));

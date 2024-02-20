@@ -6,11 +6,14 @@ import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.RequestBody;
+import lombok.extern.slf4j.Slf4j;
 import owpk.JwtRestResponse;
 import owpk.config.AppSettings;
 
+import java.util.Date;
 import java.util.UUID;
 
+@Slf4j
 public class AuthRestClientImpl implements AuthRestClient {
     private final AppSettings settings;
     private final OkHttpClient okHttp;
@@ -31,6 +34,7 @@ public class AuthRestClientImpl implements AuthRestClient {
     public JwtRestResponse authorize(String scope, String basicAuth) {
         try {
             var body = RequestBody.create(MediaType.parse("application/x-www-form-urlencoded"), "scope=" + scope);
+            log.info("Sending authorization request: " + body);
             var request = new Request.Builder()
                     .header("Content-Type", "application/x-www-form-urlencoded")
                     .header("Accept", "application/json")
@@ -41,6 +45,7 @@ public class AuthRestClientImpl implements AuthRestClient {
                     .build();
 
             var response = okHttp.newCall(request).execute();
+            log.info("Getting authorization response: " + response);
 
             // this cringe is needed to make native image build works.....
             if (response.isSuccessful()) {
@@ -49,6 +54,7 @@ public class AuthRestClientImpl implements AuthRestClient {
                     JsonNode node = mapper.readTree(bytes);
                     var accessToken = node.get("access_token").asText();
                     var expiresAt = node.get("expires_at").asLong();
+                    log.info("Authorization success! Token expires at: " + new Date(expiresAt));
                     return new JwtRestResponse(accessToken, expiresAt);
                 }
             }

@@ -3,12 +3,15 @@ package owpk.grpc;
 import io.grpc.CallCredentials;
 import io.grpc.Metadata;
 import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.Executor;
 
 import static owpk.Constants.AUTHORIZATION_METADATA_KEY;
 import static owpk.Constants.BEARER_TYPE;
 
+@Slf4j
 public class GigaChatCreds extends CallCredentials {
     private final JwtTokenProvider tokenProvider;
 
@@ -18,6 +21,7 @@ public class GigaChatCreds extends CallCredentials {
 
     @Override
     public void applyRequestMetadata(RequestInfo requestInfo, Executor appExecutor, MetadataApplier applier) {
+        log.info("Executing request: {}", requestInfo.getMethodDescriptor().getBareMethodName());
         try {
             var jwt = tokenProvider.getJwt();
             doRequest(applier, jwt);

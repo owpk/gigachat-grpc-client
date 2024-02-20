@@ -1,16 +1,55 @@
 package owpk.cli;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.ConsoleAppender;
+import io.micronaut.logging.LoggingSystem;
+import jakarta.inject.Inject;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.LoggerFactory;
+import owpk.LoggingUtils;
 import picocli.CommandLine;
 
 @CommandLine.Command(name = "gigachat-cli", description = "GigaChat CLI. Use -h or --help for more information",
         mixinStandardHelpOptions = true, subcommands = {ChatRequestCommand.class, ConfigCommand.class, ModelCommand.class})
+@Slf4j
 public class GigachatCommand implements Runnable {
+    private final LoggingSystem loggingSystem;
+
+    @Inject
+    public GigachatCommand(LoggingSystem loggingSystem) {
+        this.loggingSystem = loggingSystem;
+    }
+
     // TODO add help
     @CommandLine.Option(names = {"-h", "--help"}, description = "Display help information.")
     boolean showHelp;
 
+    @CommandLine.Option(names = "--log-level", description = "Set log level: ERROR | INFO | DEBUG",
+            defaultValue = "INFO", scope = CommandLine.ScopeType.INHERIT)
+    public void setLogLevel(String logLevel) {
+        var ctx = (LoggerContext) LoggerFactory.getILoggerFactory();
+        var rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("ROOT");
+        var ple = new PatternLayoutEncoder();
+        ple.setPattern("%date %level [%thread] %magenta(%logger{36}) %msg%n");
+        ple.setContext(ctx);
+        ple.start();
+
+        var appender = new ConsoleAppender<ILoggingEvent>();
+        appender.setName("STDOUT_PROPS");
+        appender.setEncoder(ple);
+        appender.setContext(ctx);
+        appender.start();
+
+        rootLogger.addAppender(appender);
+        rootLogger.setLevel(Level.valueOf(logLevel));
+    }
+
     @Override
     public void run() {
+        LoggingUtils.cliCommandLog(this.getClass(), log);
         if (showHelp) {
             System.out.println("""
                     Please visit

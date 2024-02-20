@@ -6,6 +6,7 @@ import jakarta.inject.Singleton;
 import owpk.grpc.GigaChatGRpcClient;
 import owpk.storage.SettingsStore;
 
+import javax.annotation.PostConstruct;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -13,6 +14,11 @@ public class ChatService {
 
     private final GigaChatGRpcClient gigaChatGRpcClient;
 
+    @PostConstruct
+    private void init() {
+        SettingsStore.validate();
+    }
+    
     @Inject
     public ChatService(GigaChatGRpcClient gigaChatGRpcClient) {
         this.gigaChatGRpcClient = gigaChatGRpcClient;

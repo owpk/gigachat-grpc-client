@@ -28,34 +28,36 @@ public class BeanFactory {
     public OkHttpClient okHttpClient() {
         try {
             // Create a trust manager that does not validate certificate chains
-            final var trustAllCerts = new TrustManager[]{
-                    new X509TrustManager() {
-                        @Override
-                        public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
-                        }
-
-                        @Override
-                        public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
-                        }
-
-                        @Override
-                        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                            return new java.security.cert.X509Certificate[]{};
-                        }
-                    }
-            };
-
             final var sslContext = SSLContext.getInstance("SSL");
-            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+            sslContext.init(null, getSslCerts(), new java.security.SecureRandom());
             final var sslSocketFactory = sslContext.getSocketFactory();
 
-            OkHttpClient client = new OkHttpClient();
+            var client = new OkHttpClient();
             client.setSslSocketFactory(sslSocketFactory);
             client.setHostnameVerifier((hostname, session) -> true);
             return client;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private TrustManager[] getSslCerts() {
+        return new TrustManager[]{
+                new X509TrustManager() {
+                    @Override
+                    public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+                    }
+
+                    @Override
+                    public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+                    }
+
+                    @Override
+                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                        return new java.security.cert.X509Certificate[]{};
+                    }
+                }
+        };
     }
 
     @Singleton
@@ -65,9 +67,7 @@ public class BeanFactory {
 
     @Singleton
     public AuthorizationRestService authorizationRestService(AuthRestClient authRestClient) {
-        var authService = new AuthorizationRestService(authRestClient, settings);
-        authService.getJwt();
-        return authService;
+        return new AuthorizationRestService(authRestClient, settings);
     }
 
     @Singleton
