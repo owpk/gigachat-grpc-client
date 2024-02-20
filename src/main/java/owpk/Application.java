@@ -19,11 +19,10 @@ import java.nio.file.Paths;
 // TODO chat history
 public class Application {
 
-    private static final String userHome = System.getProperty("user.home");
-    private static final String appHome = userHome + File.separator + ".gigachat-cli";
-    private static final String settingsHome = appHome + File.separator + "gigachat.properties";
-
-    private static File homeDir;
+    public static final String userHome = System.getProperty("user.home");
+    public static final String appHome = userHome + File.separator + ".gigachat-cli";
+    public static final String settingsHome = appHome + File.separator + "gigachat.properties";
+    public static File homeDir = new File(appHome);
     public static File settingsFile;
 
 
