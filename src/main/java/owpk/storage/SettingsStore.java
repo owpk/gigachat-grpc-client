@@ -3,6 +3,7 @@ package owpk.storage;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import owpk.Application;
+import owpk.config.AppSettings;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,6 +19,12 @@ public class SettingsStore {
     private final File settingsFile = Application.settingsFile;
 
     private Properties properties;
+
+    private final AppSettings appSettings;
+
+    public SettingsStore(AppSettings appSettings) {
+        this.appSettings = appSettings;
+    }
 
     public void init() {
         log.info("Init application settings store: " + settingsFile.getAbsolutePath());

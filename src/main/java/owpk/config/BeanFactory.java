@@ -32,7 +32,7 @@ public class BeanFactory {
     @Singleton
     @Order(value = Integer.MAX_VALUE)
     public SettingsStore settingsStore() {
-        var settings = new SettingsStore();
+        var settings = new SettingsStore(this.settings);
         settings.init();
         return settings;
     }
@@ -80,7 +80,7 @@ public class BeanFactory {
 
     @Singleton
     public AuthorizationRestService authorizationRestService(AuthRestClient authRestClient, SettingsStore settingsStore) {
-        return new AuthorizationRestService(authRestClient, settings, settingsStore);
+        return new AuthorizationRestService(authRestClient, settingsStore);
     }
 
     @Singleton

@@ -26,15 +26,19 @@ import static owpk.Constants.USER_ROLE;
 // TODO json storage
 public class ChatService {
     private static final String CHAT_FILE = "chat";
-    private static final String ROLE_USER_PAT = "[[" + USER_ROLE + "]]";
-    private static final String ROLE_CHAT_PAT = "[[" + CHAT_ROLE + "]]";
+    private static final String ROLE_USER_PAT = formatPattern(USER_ROLE);
+    private static final String ROLE_CHAT_PAT = formatPattern(CHAT_ROLE);
     private static final Path CHAT_FILE_PATH = Paths.get(Application.appHome, CHAT_FILE);
-
     private final GigaChatGRpcClient gigaChatGRpcClient;
+    private final SettingsStore settingsStore;
 
+    private static String formatPattern(String pattern) {
+        return "[[ " + pattern.toUpperCase() + " ]]";
+    }
     @Inject
     public ChatService(GigaChatGRpcClient gigaChatGRpcClient, SettingsStore settingsStore) {
         this.gigaChatGRpcClient = gigaChatGRpcClient;
+        this.settingsStore = settingsStore;
         settingsStore.validate();
         try {
             if (!Files.exists(CHAT_FILE_PATH))
@@ -64,12 +68,10 @@ public class ChatService {
     }
 
     private Gigachatv1.ChatRequest buildRequest(String query) {
-        System.out.println("");
-        System.out.println();
         var lastMessages = readLastMessages();
         persistContentToHistory((query + "\n").getBytes(StandardCharsets.UTF_8), ROLE_USER_PAT);
         return Gigachatv1.ChatRequest.newBuilder()
-                .setModel("GigaChat:latest")
+                .setModel(settingsStore.getAppSettings().getModel())
                 .addAllMessages(lastMessages)
                 .addMessages(Gigachatv1.Message.newBuilder()
                         .setRole(USER_ROLE)

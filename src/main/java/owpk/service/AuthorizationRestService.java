@@ -17,9 +17,9 @@ public class AuthorizationRestService implements JwtTokenProvider {
     private final SettingsStore settingsStore;
     private final String credentialsHash;
 
-    public AuthorizationRestService(AuthRestClient client, AppSettings settings, SettingsStore settingsStore) {
+    public AuthorizationRestService(AuthRestClient client, SettingsStore settingsStore) {
         this.client = client;
-        this.settings = settings;
+        this.settings = settingsStore.getAppSettings();
         credentialsHash = settings.getComposedCredentials();
         this.settingsStore = settingsStore;
     }
