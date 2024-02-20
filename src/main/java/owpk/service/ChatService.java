@@ -4,20 +4,18 @@ import gigachat.v1.Gigachatv1;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import owpk.Application;
-import owpk.Constants;
 import owpk.grpc.GigaChatGRpcClient;
 import owpk.storage.SettingsStore;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -53,18 +51,26 @@ public class ChatService {
 
     public void chatStream(String query) {
         var iter = gigaChatGRpcClient.chatStream(buildRequest(query));
+        var sw = new StringWriter();
         while (iter.hasNext()) {
             var msg = iter.next();
-            System.out.print(msg.getAlternativesList().stream().map(a -> a.getMessage().getContent())
-                    .collect(Collectors.joining(" ")));
+            var content = msg.getAlternativesList().stream().map(a -> a.getMessage().getContent())
+                    .collect(Collectors.joining(" "));
+            sw.append(content);
+            System.out.print(content);
         }
+        sw.append("\n");
+        persistContentToHistory(sw.toString().getBytes(StandardCharsets.UTF_8), ROLE_CHAT_PAT);
     }
 
     private Gigachatv1.ChatRequest buildRequest(String query) {
-        persistContentToHistory(query.getBytes(), ROLE_USER_PAT);
+        System.out.println("");
+        System.out.println();
+        var lastMessages = readLastMessages();
+        persistContentToHistory((query + "\n").getBytes(StandardCharsets.UTF_8), ROLE_USER_PAT);
         return Gigachatv1.ChatRequest.newBuilder()
                 .setModel("GigaChat:latest")
-                .addAllMessages(readLastMessages(10))
+                .addAllMessages(lastMessages)
                 .addMessages(Gigachatv1.Message.newBuilder()
                         .setRole(USER_ROLE)
                         .setContent(query)
@@ -84,45 +90,49 @@ public class ChatService {
         }
     }
 
-    private List<Gigachatv1.Message> readLastMessages(Integer linesCount) {
-        int lines = linesCount;
-        int readLines = 0;
-
+    private List<Gigachatv1.Message> readLastMessages() {
         var messages = new ArrayList<Gigachatv1.Message>();
+        boolean userQuestionFound = false;
+        boolean systemQuestionFound = false;
 
         try (var raf = new RandomAccessFile(CHAT_FILE_PATH.toFile(), "r")) {
-
-            long fileLength = CHAT_FILE_PATH.toFile().length() - 1;
+            System.out.println();
+            long fileLength = CHAT_FILE_PATH.toFile().length();
             raf.seek(fileLength);
 
             var lineBuilder = new StringWriter();
+            var linesList = new ArrayList<String>();
+
             for (long pointer = fileLength; pointer >= 0; pointer--) {
-                var linesList = new ArrayList<String>();
                 raf.seek(pointer);
                 char c;
                 c = (char) raf.read();
-                lineBuilder.append(c);
 
-                if (c == '\n' || c == '\r') {
+                if (pointer == 0)
+                    lineBuilder.append(c);
+
+                if (c == '\r' || c == '\n' || pointer == 0) {
                     var stringLine = lineBuilder.getBuffer().reverse().toString();
                     if (stringLine.startsWith(ROLE_USER_PAT)) {
                         var rpcMsg = buildMessage(String.join("", linesList), USER_ROLE);
                         messages.add(rpcMsg);
                         linesList = new ArrayList<>();
+                        userQuestionFound = true;
                     } else if (stringLine.startsWith(ROLE_CHAT_PAT)) {
                         var rpcMsg = buildMessage(String.join("", linesList), CHAT_ROLE);
                         messages.add(rpcMsg);
                         linesList = new ArrayList<>();
-                    }
-                    readLines++;
-                    linesList.add(stringLine);
-                    lineBuilder.flush();
-                    if (readLines == lines)
+                        systemQuestionFound = true;
+                    } else
+                        linesList.add(stringLine);
+                    lineBuilder = new StringWriter();
+                    if (userQuestionFound && systemQuestionFound)
                         break;
-                }
+                } else
+                    lineBuilder.append(c);
+
                 fileLength = fileLength - pointer;
             }
-
             return messages;
         } catch (IOException e) {
             throw new RuntimeException(e);
