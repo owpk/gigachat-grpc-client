@@ -25,7 +25,7 @@ public class GigachatCommand implements Runnable {
 
     // replacing stdout appender to logging output into console
     @CommandLine.Option(names = "--log-level", description = "Set log level: ERROR | INFO | DEBUG",
-            defaultValue = "INFO", scope = CommandLine.ScopeType.INHERIT)
+            defaultValue = "ERROR", scope = CommandLine.ScopeType.INHERIT)
     public void setLogLevel(String logLevel) {
         loggingSystem.setLogLevel(Logger.ROOT_LOGGER_NAME, LogLevel.valueOf(logLevel));
     }
