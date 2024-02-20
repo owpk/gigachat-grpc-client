@@ -30,7 +30,7 @@ dependencies {
     implementation("io.micronaut:micronaut-jackson-databind")
     compileOnly("org.projectlombok:lombok")
     compileOnly "org.apache.tomcat:annotations-api:6.0.53"
-    implementation("ch.qos.logback:logback-classic")
+    runtimeOnly("ch.qos.logback:logback-classic")
 
 //    implementation 'com.konghq:unirest-java:3.14.5'
     implementation("info.picocli:picocli")
@@ -55,16 +55,21 @@ sourceSets {
     }
 }
 
-application {
-    mainClass.set("owpk.Application")
-}
-
 java {
     sourceCompatibility = JavaVersion.toVersion("17")
     targetCompatibility = JavaVersion.toVersion("17")
 }
 
 graalvmNative.toolchainDetection = false
+
+graalvmNative {
+    binaries {
+        main {
+            imageName.set('gigachat')
+            buildArgs.add('--verbose')
+        }
+    }
+}
 
 micronaut {
     runtime("netty")
@@ -95,4 +100,3 @@ protobuf {
         all()*.plugins { grpc {} }
     }
 }
-

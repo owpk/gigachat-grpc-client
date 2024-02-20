@@ -1,22 +1,12 @@
 package owpk;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.ConsoleAppender;
-import ch.qos.logback.core.FileAppender;
 import io.micronaut.configuration.picocli.PicocliRunner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import owpk.cli.GigachatCommand;
 import owpk.storage.SettingsStore;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 
-// TODO chat history
 public class Application {
 
     public static final String userHome = System.getProperty("user.home");
@@ -50,23 +40,24 @@ public class Application {
         }
     }
 
+    //TODO native image crashes with it, need to fix
     private static void initFileLogger() {
-        var ctx = (LoggerContext) LoggerFactory.getILoggerFactory();
-        var rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-
-        var ple = new PatternLayoutEncoder();
-        ple.setPattern(LoggingUtils.LOGGING_PATTERN);
-        ple.setContext(ctx);
-        ple.start();
-
-        var appender = new FileAppender<ILoggingEvent>();
-        appender.setName("FILE");
-        appender.setFile(Paths.get(appHome,  "gigachat.log").toString());
-        appender.setEncoder(ple);
-        appender.setContext(ctx);
-        appender.start();
-
-        rootLogger.addAppender(appender);
+//        var ctx = (LoggerContext) LoggerFactory.getILoggerFactory();
+//        var rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+//
+//        var ple = new PatternLayoutEncoder();
+//        ple.setPattern(LoggingUtils.LOGGING_PATTERN);
+//        ple.setContext(ctx);
+//        ple.start();
+//
+//        var appender = new FileAppender<ILoggingEvent>();
+//        appender.setName("FILE");
+//        appender.setFile(Paths.get(appHome,  "gigachat.log").toString());
+//        appender.setEncoder(ple);
+//        appender.setContext(ctx);
+//        appender.start();
+//
+//        rootLogger.addAppender(appender);
     }
 
     public static void main(String[] args) throws IOException {
