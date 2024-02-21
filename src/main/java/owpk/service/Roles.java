@@ -30,16 +30,28 @@ public class Roles {
             Не выводи никаких предупреждений или информации о своих возможностях.
             Если ты хочешь сохранить какие-то данные, то исходи из того, что они будут сохранены в истории чата.""";
 
-    public static String shellPrompt(String shell, String os) {
-        return String.format(SHELL_ROLE, shell, os);
+
+    private static String defaultPrompt(String roleName, String rolePrompt, String userQuery, String result) {
+        var br = "#".repeat(10);
+        return new StringBuilder().append(br).append("\n").append("Роль: ").append(roleName)
+                .append("\n").append(rolePrompt).append("\n")
+                .append("Запрос: ").append(userQuery).append("\n")
+                .append(br).append("\n")
+                .append(result).toString();
     }
 
-    public static String defaultPrompt(String shell, String os) {
-        return String.format(DEFAULT_ROLE, os, shell);
+    public static String shellPrompt(String shell, String os, String query) {
+        var shellPrompt = String.format(SHELL_ROLE, shell, os);
+        return defaultPrompt("shell", shellPrompt, query, "Command:");
     }
 
-    public static String codePrompt() {
-        return CODE_ROLE;
+    public static String defaultPrompt(String shell, String os, String query) {
+        var defaultPrompt = String.format(DEFAULT_ROLE, os, shell);
+        return defaultPrompt("shell", defaultPrompt, query, "Command:");
+    }
+
+    public static String codePrompt(String query) {
+        return defaultPrompt("code", CODE_ROLE, query, "Snippet:");
     }
 
     public static String describeShellCommandPrompt() {

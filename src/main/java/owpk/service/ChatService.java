@@ -72,16 +72,21 @@ public class ChatService {
 
     private Gigachatv1.ChatRequest buildRequest(String query) {
         var lastMessages = readLastMessages();
-        persistContentToHistory((query + "\n").getBytes(StandardCharsets.UTF_8), ROLE_USER_PAT);
+        var content = getContentWithRole(query);
+        persistContentToHistory((content + "\n").getBytes(StandardCharsets.UTF_8), ROLE_USER_PAT);
 
         return Gigachatv1.ChatRequest.newBuilder()
                 .setModel(settingsStore.getAppSettings().getModel())
                 .addAllMessages(lastMessages)
                 .addMessages(Gigachatv1.Message.newBuilder()
                         .setRole(USER_ROLE)
-                        .setContent(query)
+                        .setContent(content)
                         .build())
                 .build();
+    }
+
+    private String getContentWithRole(String query) {
+        return Roles.codePrompt(query);
     }
 
     private void persistContentToHistory(byte[] content, String role) {
