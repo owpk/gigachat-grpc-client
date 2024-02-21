@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,6 +36,7 @@ public class ChatService {
     private static String formatPattern(String pattern) {
         return "[[ " + pattern.toUpperCase() + " ]]";
     }
+
     @Inject
     public ChatService(GigaChatGRpcClient gigaChatGRpcClient, SettingsStore settingsStore) {
         this.gigaChatGRpcClient = gigaChatGRpcClient;
@@ -64,12 +66,14 @@ public class ChatService {
             System.out.print(content);
         }
         sw.append("\n");
+
         persistContentToHistory(sw.toString().getBytes(StandardCharsets.UTF_8), ROLE_CHAT_PAT);
     }
 
     private Gigachatv1.ChatRequest buildRequest(String query) {
         var lastMessages = readLastMessages();
         persistContentToHistory((query + "\n").getBytes(StandardCharsets.UTF_8), ROLE_USER_PAT);
+
         return Gigachatv1.ChatRequest.newBuilder()
                 .setModel(settingsStore.getAppSettings().getModel())
                 .addAllMessages(lastMessages)
@@ -92,6 +96,10 @@ public class ChatService {
         }
     }
 
+    // TODO Refactor!
+    //   find exact two last messages: from me and from chat
+    //   if any not found - throw error
+    //   last in cache should always be chat system msg if its not exist return empty list
     private List<Gigachatv1.Message> readLastMessages() {
         var messages = new ArrayList<Gigachatv1.Message>();
         boolean userQuestionFound = false;
@@ -130,6 +138,8 @@ public class ChatService {
                     lineBuilder = new StringWriter();
                     if (userQuestionFound && systemQuestionFound)
                         break;
+                    else if (userQuestionFound)
+                        return Collections.emptyList();
                 } else
                     lineBuilder.append(c);
 
