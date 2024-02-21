@@ -1,7 +1,7 @@
 package owpk.service;
 
 import lombok.extern.slf4j.Slf4j;
-import owpk.Constants;
+import owpk.GigaChatConstants;
 import owpk.JwtRestResponse;
 import owpk.api.AuthRestClient;
 import owpk.config.AppSettings;
@@ -40,7 +40,7 @@ public class AuthorizationRestService implements JwtTokenProvider {
     @Override
     public JwtRestResponse refreshToken() {
         log.info("JWT: Attempting to refresh token...");
-        var jwt = client.authorize(Constants.GigachatScope.PERSONAL, credentialsHash);
+        var jwt = client.authorize(GigaChatConstants.Scope.PERSONAL, credentialsHash);
         rewriteJwt(jwt);
         return jwt;
     }

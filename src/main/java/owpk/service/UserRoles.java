@@ -1,6 +1,6 @@
 package owpk.service;
 
-public class Roles {
+public class UserRoles {
 
     private static final String SHELL_ROLE = """
             Возвращай только команды оболочки %s для операционной системы %s без пояснений.
