@@ -7,6 +7,7 @@ import owpk.service.ChatHistoryService;
 import picocli.CommandLine;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 
 @Slf4j
 @CommandLine.Command(name = "history", aliases = {"hs", "h"}, description = "Chat with GigaChat.",
@@ -23,7 +24,7 @@ public class ChatHistoryCommand implements Runnable {
     @Override
     public void run() {
         LoggingUtils.cliCommandLog(this.getClass(), log);
-        var messages = chatHistoryService.readLastMessages();
+        var messages = chatHistoryService.readLastMessages(true);
         log.info("Chat history: " + messages.size());
 
         messages.stream().map(it -> CommandLine.Help.Ansi.AUTO.string(String.format(

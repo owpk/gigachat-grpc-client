@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -46,22 +47,21 @@ public class ChatHistoryService {
         }
     }
 
-    public List<ChatMessage> readLastMessages() {
-        return readLastMessages(it -> false);
+    public List<ChatMessage> readLastMessages(boolean reversed) {
+        return readLastMessages(it -> false, reversed);
     }
 
-    public List<ChatMessage> readLastMessages(int msgCount) {
-        return readLastMessages(it -> it <= msgCount);
+    public List<ChatMessage> readLastMessages(int msgCount, boolean reversed) {
+        return readLastMessages(it -> it <= msgCount, reversed);
     }
 
-    private List<ChatMessage> readLastMessages(Predicate<Integer> predicate) {
+    private List<ChatMessage> readLastMessages(Predicate<Integer> predicate, boolean reversed) {
         var messages = new ArrayList<ChatMessage>();
 
         try (var raf = new RandomAccessFile(CHAT_FILE_PATH.toFile(), "r")) {
             long fileLength = CHAT_FILE_PATH.toFile().length();
             raf.seek(fileLength);
 
-            var lineBuilder = new StringWriter();
             var linesList = new ArrayList<String>();
             var byteArrayOut = ByteStreams.newDataOutput();
 
@@ -71,7 +71,7 @@ public class ChatHistoryService {
                 char c = (char) b;
 
                 if (pointer == 0)
-                    lineBuilder.append(c);
+                    byteArrayOut.write(b);
 
                 if (c == '\r' || c == '\n' || pointer == 0) {
                     var body = byteArrayOut.toByteArray();
@@ -82,8 +82,9 @@ public class ChatHistoryService {
                         linesList = getStrings(GigaChatConstants.Role.USER, linesList, messages);
                     } else if (stringLine.startsWith(ROLE_CHAT_PAT)) {
                         linesList = getStrings(GigaChatConstants.Role.ASSISTANT, linesList, messages);
-                    } else
-                        linesList.add(stringLine);
+                    } else {
+                        linesList.add(stringLine + "\n");
+                    }
 
                     byteArrayOut = ByteStreams.newDataOutput();
 
@@ -93,6 +94,8 @@ public class ChatHistoryService {
                     byteArrayOut.write(b);
                 fileLength = fileLength - pointer;
             }
+            if (reversed)
+                Collections.reverse(messages);
             return messages;
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -101,6 +104,7 @@ public class ChatHistoryService {
 
     private static ArrayList<String> getStrings(String user, ArrayList<String> linesList,
                                                 ArrayList<ChatMessage> messages) {
+        Collections.reverse(linesList);
         var rpcMsg = new ChatMessage(user,
                 String.join("", linesList));
         messages.add(rpcMsg);

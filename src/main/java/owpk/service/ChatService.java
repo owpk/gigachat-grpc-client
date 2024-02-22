@@ -48,7 +48,7 @@ public class ChatService {
     }
 
     private Gigachatv1.ChatRequest buildRequest(String query) {
-        var lastMessages = chatHistoryService.readLastMessages(5)
+        var lastMessages = chatHistoryService.readLastMessages(5, false)
                 .stream().map(it -> buildMessage(it.content(), it.role()))
                 .collect(Collectors.toList());
 
