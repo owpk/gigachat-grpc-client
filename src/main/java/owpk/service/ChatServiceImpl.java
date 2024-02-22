@@ -3,6 +3,7 @@ package owpk.service;
 import gigachat.v1.Gigachatv1;
 import lombok.extern.slf4j.Slf4j;
 import owpk.GigaChatConstants;
+import owpk.RolePromptAction;
 import owpk.grpc.GigaChatGRpcClient;
 import owpk.model.PromptRole;
 import owpk.storage.SettingsStore;
@@ -68,12 +69,12 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public void chat(PromptRole promptRole) {
+    public void chat(RolePromptAction promptRole) {
         baseChatRequest(promptRole, Collections.emptyList());
     }
 
     @Override
-    public void chat(PromptRole promptRole, int lastMessageCount) {
+    public void chat(RolePromptAction promptRole, int lastMessageCount) {
         baseChatRequest(promptRole, readLastMessages(lastMessageCount));
     }
 
@@ -105,11 +106,14 @@ public class ChatServiceImpl implements ChatService {
                 .collect(Collectors.toList());
     }
 
-    protected void baseChatRequest(PromptRole role,
+    protected void baseChatRequest(RolePromptAction rolePromptAction,
                                    List<Gigachatv1.Message> messages) {
-        persistRequest(role.userQuery(), role.messageRoleName());
+        persistRequest(rolePromptAction.getRolePrompt(),
+                rolePromptAction.getMessageRole());
+
         var request = createdRequestBuilder(messages);
-        request.addMessages(buildMessage(role.rolePrompt(), role.messageRoleName()));
+        request.addMessages(buildMessage(rolePromptAction.getRolePrompt(),
+                rolePromptAction.getMessageRole()));
 
         log.info("""
                 Building grpc request:

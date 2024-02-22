@@ -7,6 +7,8 @@ import owpk.storage.SettingsStore;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 @Slf4j
 public class Application {
@@ -16,9 +18,14 @@ public class Application {
     public static final String settingsHome = appHome + File.separator + "gigachat.properties";
     public static File homeDir = new File(appHome);
     public static File settingsFile;
-
+    public static String osName;
 
     private static void init() throws IOException {
+        try {
+            osName = Files.readString(Paths.get("/etc/issue"));
+        } catch (IOException e) {
+            osName = System.getProperty("os.name");
+        }
         initConfigHome();
         System.setProperty("micronaut.config.files", settingsHome);
     }

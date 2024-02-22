@@ -72,16 +72,13 @@ public class GigaChatCommand implements Runnable {
         if (!query.isBlank()) {
             if (codeMode) {
                 log.info("Running in code mode");
-                chatService.chat(new PromptRole(
-                        query, "code", UserRoles.codePrompt(query),  SYSTEM));
+                chatService.chat(UserRoles.of(UserRoles.CODE).apply(query));
             } else if (shellMode) {
                 log.info("Running in shell mode");
-                chatService.chat(new PromptRole(
-                        query, "shell", UserRoles.shellPrompt("zsh", "Linux/Manjaro", query), SYSTEM
-                ));
+                chatService.chat(UserRoles.of(UserRoles.SHELL).apply(query));
             } else {
                 log.info("Running in chat mode");
-                chatService.chat(new PromptRole(query, "user", query, USER), 6);
+                chatService.chat(UserRoles.of(UserRoles.CHAT).apply(query), 4);
             }
         }
     }

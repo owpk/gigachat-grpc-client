@@ -4,6 +4,7 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.micronaut.context.ApplicationContext;
 import lombok.extern.slf4j.Slf4j;
+import owpk.RolePromptAction;
 import owpk.model.PromptRole;
 import owpk.storage.SettingsStore;
 
@@ -31,13 +32,13 @@ public class RetryingChatWrapper implements ChatService {
     }
 
     @Override
-    public void chat(PromptRole promptRole, int lastMessageCount) {
-        catchUnauthorized(() -> delegate.chat(promptRole, lastMessageCount));
+    public void chat(RolePromptAction rolePromptAction, int lastMessageCount) {
+        catchUnauthorized(() -> delegate.chat(rolePromptAction, lastMessageCount));
     }
 
     @Override
-    public void chat(PromptRole promptRole) {
-        catchUnauthorized(() -> delegate.chat(promptRole));
+    public void chat(RolePromptAction rolePromptAction) {
+        catchUnauthorized(() -> delegate.chat(rolePromptAction));
     }
 
     private void catchUnauthorized(Runnable callable) {

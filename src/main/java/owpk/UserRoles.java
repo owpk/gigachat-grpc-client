@@ -1,6 +1,36 @@
 package owpk;
 
-public class UserRoles {
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+
+public enum UserRoles {
+
+    SHELL, CODE, CHAT;
+
+    public static final Map<UserRoles, Function<String, RolePromptAction>> USER_ROLES_MAP = Map.of(
+
+            SHELL, query -> () -> UserRoles.shellPrompt(
+                    System.getenv("SHELL"), Application.osName, query),
+            CODE, query -> () -> UserRoles.codePrompt(query),
+            CHAT, query -> new RolePromptAction() {
+                @Override
+                public String getMessageRole() {
+                    return GigaChatConstants.Role.USER;
+                }
+
+                @Override
+                public String getRolePrompt() {
+                    return query;
+                }
+            }
+
+    );
+
+    public static Function<String, RolePromptAction> of(UserRoles role) {
+        return Optional.ofNullable(USER_ROLES_MAP.get(role))
+                .orElseThrow(IllegalArgumentException::new);
+    }
 
     private static final String SHELL_ROLE = """
             Возвращай только команды оболочки %s для операционной системы %s без пояснений.
@@ -43,11 +73,6 @@ public class UserRoles {
     public static String shellPrompt(String shell, String os, String query) {
         var shellPrompt = String.format(SHELL_ROLE, shell, os);
         return defaultPrompt("shell", shellPrompt, query, "Command:");
-    }
-
-    public static String defaultPrompt(String shell, String os, String query) {
-        var defaultPrompt = String.format(DEFAULT_ROLE, os, shell);
-        return defaultPrompt("shell", defaultPrompt, query, "Command:");
     }
 
     public static String codePrompt(String query) {
