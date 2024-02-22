@@ -22,7 +22,8 @@ public class Application {
 
     private static void init() throws IOException {
         try {
-            osName = Files.readString(Paths.get("/etc/issue"));
+            var rawOsName = Files.readString(Paths.get("/etc/issue"));
+            osName = rawOsName.substring(0, rawOsName.indexOf("\\")).trim();
         } catch (IOException e) {
             osName = System.getProperty("os.name");
         }
