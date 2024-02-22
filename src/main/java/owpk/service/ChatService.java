@@ -26,7 +26,6 @@ public class ChatService {
         this.gigaChatGRpcClient = gigaChatGRpcClient;
         this.chatHistoryService = chatHistoryService;
         this.settingsStore = settingsStore;
-        settingsStore.validate();
     }
 
     public void chat(String query) {

@@ -90,8 +90,9 @@ public class BeanFactory {
 
     @Singleton
     public RetryingChatWrapper retryingChatWrapper(ChatService chatService,
+                                                   SettingsStore settingsStore,
                                                    AuthorizationRestService authorizationRestService) {
-        return new RetryingChatWrapper(chatService, authorizationRestService);
+        return new RetryingChatWrapper(chatService, settingsStore, authorizationRestService);
     }
 
 }

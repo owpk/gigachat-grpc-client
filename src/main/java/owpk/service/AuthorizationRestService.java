@@ -15,12 +15,10 @@ public class AuthorizationRestService implements JwtTokenProvider {
     private final AuthRestClient client;
     private final AppSettings settings;
     private final SettingsStore settingsStore;
-    private final String credentialsHash;
 
     public AuthorizationRestService(AuthRestClient client, SettingsStore settingsStore) {
         this.client = client;
         this.settings = settingsStore.getAppSettings();
-        credentialsHash = settings.getComposedCredentials();
         this.settingsStore = settingsStore;
     }
 
@@ -40,7 +38,7 @@ public class AuthorizationRestService implements JwtTokenProvider {
     @Override
     public JwtRestResponse refreshToken() {
         log.info("JWT: Attempting to refresh token...");
-        var jwt = client.authorize(GigaChatConstants.Scope.PERSONAL, credentialsHash);
+        var jwt = client.authorize(GigaChatConstants.Scope.PERSONAL, settings.getComposedCredentials());
         rewriteJwt(jwt);
         return jwt;
     }

@@ -1,12 +1,14 @@
 package owpk;
 
 import io.micronaut.configuration.picocli.PicocliRunner;
+import lombok.extern.slf4j.Slf4j;
 import owpk.cli.GigaChatCommand;
 import owpk.storage.SettingsStore;
 
 import java.io.File;
 import java.io.IOException;
 
+@Slf4j
 public class Application {
 
     public static final String userHome = System.getProperty("user.home");
@@ -61,7 +63,12 @@ public class Application {
     }
 
     public static void main(String[] args) throws IOException {
-        init();
-        PicocliRunner.run(GigaChatCommand.class, args);
+        try {
+            init();
+            PicocliRunner.run(GigaChatCommand.class, args);
+        } catch (Throwable e) {
+            log.info("Error while running command.", e);
+            System.out.println("Error while running command: " + e.getLocalizedMessage());
+        }
     }
 }

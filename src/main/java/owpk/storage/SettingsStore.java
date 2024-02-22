@@ -14,6 +14,18 @@ import java.util.Properties;
 @Getter
 @Slf4j
 public class SettingsStore {
+
+    // TODO maybe no need
+//    private static final String ERROR_MSG = """
+//            Error:
+//                Missing 'gigachat.composedCredentials'.
+//                Use gigachat-cli config -c 'YOUR_CREDENTIALS'
+//                OR
+//                Set it manually in ~/.gigachat-cli/gigachat.properties.
+//                For more info visit:
+//                https://developers.sber.ru/docs/ru/gigachat/api/reference/rest/post-token
+//            """;
+
     private static final String NOT_VALID_JWT = "empty_jwt";
 
     private final File settingsFile = Application.settingsFile;
@@ -39,22 +51,12 @@ public class SettingsStore {
         }
     }
 
-    public void validate() {
+    public boolean validate() {
         log.info("Validating application settings store properties...");
         load();
-        if (getProperty("gigachat.composedCredentials").isEmpty()) {
-            System.out.println("""
-                    Error:
-                        Missing 'gigachat.composedCredentials'.
-                        Use gigachat-cli config -c 'YOUR_CREDENTIALS'
-                        OR
-                        Set it manually in ~/.gigachat-cli/gigachat.properties.
-                        For more info visit:
-                        https://developers.sber.ru/docs/ru/gigachat/api/reference/rest/post-token
-                    """);
-            System.exit(0);
-        }
+        return !getProperty("gigachat.composedCredentials").isEmpty();
     }
+
 
     public void setDefaults() {
         log.info("Setting default application properties...");
