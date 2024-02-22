@@ -24,13 +24,11 @@ public class RetryingChatWrapper implements ChatService {
     }
 
     public void setUnaryMode() {
-        this.delegate = applicationContext.getBean(UnaryChatServiceImpl.class,
-                Qualifiers.byName("chat_unary"));
+        this.delegate = applicationContext.getBean(UnaryChatServiceImpl.class);
     }
 
     public void setStreamMode() {
-        this.delegate = applicationContext.getBean(UnaryChatServiceImpl.class,
-                Qualifiers.byName("chat_stream"));
+        this.delegate = applicationContext.getBean(StreamChatServiceImpl.class);
     }
 
     public void chat(String query, int lastMessageCount) {

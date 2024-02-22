@@ -34,11 +34,11 @@ public abstract class DefaultAbsChat implements ChatService {
         log.info("""
                 Building grpc request:
                     Query: {}
-                    Last messages count: {}
-                    Last messages roles: {}
+                    Additional messages count: {}
+                    Messages roles: {}
                 """, query, additionalMessages.size(), additionalMessages.stream()
                 .map(Gigachatv1.Message::getRole)
-                .collect(Collectors.joining(" ")));
+                .collect(Collectors.joining("; ")));
 
         return Gigachatv1.ChatRequest.newBuilder()
                 .setModel(settingsStore.getAppSettings().getModel())
@@ -68,14 +68,14 @@ public abstract class DefaultAbsChat implements ChatService {
     }
 
     // TODO handle response alternatives (what is it at all???)
-    protected String handleResponse(Gigachatv1.ChatResponse chatResponse) {
+    protected String defaultHandleResponse(Gigachatv1.ChatResponse chatResponse) {
         return chatResponse.getAlternativesList().stream().map(a -> a.getMessage().getContent())
                 .collect(Collectors.joining(" "));
     }
 
     public void chat(String query, int lastMessageCount) {
         persistRequest(query);
-        var result = chatBuilder(buildRequest(query, lastMessageCount));
+        var result = handleChatRequest(buildRequest(query, lastMessageCount));
         persistResponse(result);
     }
 
@@ -95,6 +95,6 @@ public abstract class DefaultAbsChat implements ChatService {
         persistResponse("");
     }
 
-    protected abstract String chatBuilder(Gigachatv1.ChatRequest request);
+    protected abstract String handleChatRequest(Gigachatv1.ChatRequest request);
     protected abstract String chatRoleBuilder(Gigachatv1.Message systemMsg, String query);
 }

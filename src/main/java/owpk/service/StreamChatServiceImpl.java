@@ -7,10 +7,8 @@ import owpk.grpc.GigaChatGRpcClient;
 import owpk.storage.SettingsStore;
 
 import java.io.StringWriter;
-import java.util.stream.Collectors;
 
 @Singleton
-@Named(value = "chat_stream")
 public class StreamChatServiceImpl extends DefaultAbsChat {
 
     public StreamChatServiceImpl(GigaChatGRpcClient gigaChatGRpcClient,
@@ -28,7 +26,7 @@ public class StreamChatServiceImpl extends DefaultAbsChat {
     }
 
     @Override
-    public String chatBuilder(Gigachatv1.ChatRequest chatRequest) {
+    public String handleChatRequest(Gigachatv1.ChatRequest chatRequest) {
         return defaultStream(chatRequest);
     }
 
@@ -37,7 +35,7 @@ public class StreamChatServiceImpl extends DefaultAbsChat {
         var iterator = gigaChatGRpcClient.chatStream(request);
         while (iterator.hasNext()) {
             var msg = iterator.next();
-            var content = handleResponse(msg);
+            var content = defaultHandleResponse(msg);
             sw.append(content);
             System.out.print(content);
         }

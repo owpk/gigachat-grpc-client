@@ -42,7 +42,7 @@ public class GigaChatCommand implements Runnable {
     String query;
 
     @CommandLine.Option(names = {"-u", "--unary"},
-            description = "Use unary response type. Default type is stream")
+            description = "Use unary response type. Default type is stream", defaultValue = "false")
     public void useUnary(boolean useUnary) {
         if (useUnary) chatService.setUnaryMode();
         else chatService.setStreamMode();

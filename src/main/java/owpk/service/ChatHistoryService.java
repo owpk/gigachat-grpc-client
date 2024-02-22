@@ -52,7 +52,7 @@ public class ChatHistoryService {
     }
 
     public List<ChatMessage> readLastMessages(int msgCount, boolean reversed) {
-        return readLastMessages(it -> it <= msgCount, reversed);
+        return readLastMessages(it -> it >= msgCount, reversed);
     }
 
     private List<ChatMessage> readLastMessages(Predicate<Integer> predicate, boolean reversed) {
