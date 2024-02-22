@@ -100,7 +100,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     protected List<Gigachatv1.Message> readLastMessages(int messageCount) {
-        return chatHistoryService.readLastMessages(messageCount, true)
+        return chatHistoryService.readLastMessages(messageCount, true, false)
                 .stream().map(it -> buildMessage(it.content(), it.role()))
                 .collect(Collectors.toList());
     }

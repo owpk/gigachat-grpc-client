@@ -44,15 +44,15 @@ public class ChatHistoryService {
         }
     }
 
-    public List<ChatMessage> readLastMessages(boolean reversed) {
-        return readLastMessages(it -> false, reversed);
+    public List<ChatMessage> readLastMessages(boolean reversed, boolean all) {
+        return readLastMessages(it -> false, reversed, all);
     }
 
-    public List<ChatMessage> readLastMessages(int msgCount, boolean reversed) {
-        return readLastMessages(it -> it >= msgCount, reversed);
+    public List<ChatMessage> readLastMessages(int msgCount, boolean reversed, boolean all) {
+        return readLastMessages(it -> it >= msgCount, reversed, all);
     }
 
-    private List<ChatMessage> readLastMessages(Predicate<Integer> predicate, boolean reversed) {
+    private List<ChatMessage> readLastMessages(Predicate<Integer> predicate, boolean reversed, boolean all) {
         var messages = new ArrayList<ChatMessage>();
 
         try (var raf = new RandomAccessFile(CHAT_FILE_PATH.toFile(), "r")) {
@@ -82,7 +82,8 @@ public class ChatHistoryService {
                         linesList = getStrings(GigaChatConstants.MessageRole.ASSISTANT,
                                 linesList, messages);
                     } else if (stringLine.startsWith(ROLE_PREFIX)) {
-                        linesList = new ArrayList<>();
+                        if (all) linesList = getStrings(defineRole(stringLine), linesList, messages);
+                        else linesList = new ArrayList<>();
                     } else {
                         linesList.add(stringLine + "\n");
                     }
@@ -101,6 +102,10 @@ public class ChatHistoryService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String defineRole(String role) {
+        return role.substring(role.indexOf("{") + 1, role.lastIndexOf("}")).trim();
     }
 
     private static ArrayList<String> getStrings(String user, ArrayList<String> linesList,

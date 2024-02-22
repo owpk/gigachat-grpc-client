@@ -24,7 +24,7 @@ public class ChatHistoryCommand implements Runnable {
     @Override
     public void run() {
         LoggingUtils.cliCommandLog(this.getClass(), log);
-        var messages = chatHistoryService.readLastMessages(true);
+        var messages = chatHistoryService.readLastMessages(true, true);
         log.info("Chat history: " + messages.size());
 
         messages.stream().map(it -> CommandLine.Help.Ansi.AUTO.string(String.format(
