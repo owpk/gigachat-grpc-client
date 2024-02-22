@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 @Slf4j
 @Singleton
@@ -42,7 +43,15 @@ public class ChatHistoryService {
         }
     }
 
+    public List<ChatMessage> readLastMessages() {
+        return readLastMessages(it -> false);
+    }
+
     public List<ChatMessage> readLastMessages(int msgCount) {
+        return readLastMessages(it -> it <= msgCount);
+    }
+
+    private List<ChatMessage> readLastMessages(Predicate<Integer> predicate) {
         var messages = new ArrayList<ChatMessage>();
 
         try (var raf = new RandomAccessFile(CHAT_FILE_PATH.toFile(), "r")) {
@@ -76,7 +85,8 @@ public class ChatHistoryService {
                     } else
                         linesList.add(stringLine);
                     lineBuilder = new StringWriter();
-                    if (messages.size() >= msgCount)
+
+                    if (predicate.test(messages.size()))
                         break;
                 } else
                     lineBuilder.append(c);
