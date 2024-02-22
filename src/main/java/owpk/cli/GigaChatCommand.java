@@ -6,10 +6,14 @@ import jakarta.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import owpk.LoggingUtils;
+import owpk.UserRoles;
+import owpk.model.PromptRole;
 import owpk.service.RetryingChatWrapper;
 import picocli.CommandLine;
 
 import static owpk.Application.showApiDocsHelp;
+import static owpk.GigaChatConstants.Role.SYSTEM;
+import static owpk.GigaChatConstants.Role.USER;
 
 @Slf4j
 @CommandLine.Command(name = "gigachat", description = "GigaChat CLI. Use -h or --help for more information",
@@ -38,7 +42,7 @@ public class GigaChatCommand implements Runnable {
         }
     }
 
-    @CommandLine.Parameters(defaultValue = "", index = "0", description = "User query")
+    @CommandLine.Parameters(defaultValue = "", description = "User query")
     String query;
 
     @CommandLine.Option(names = {"-u", "--unary"},
@@ -54,11 +58,31 @@ public class GigaChatCommand implements Runnable {
         loggingSystem.setLogLevel(Logger.ROOT_LOGGER_NAME, LogLevel.valueOf(logLevel));
     }
 
+    // TODO add description
+    @CommandLine.Option(names = {"-c", "--code"}, description = "Set shell mode.")
+    boolean codeMode;
+
+    // TODO add description
+    @CommandLine.Option(names = {"-s", "--shell"}, description = "Set code mode.")
+    boolean shellMode;
+
     @Override
     public void run() {
         LoggingUtils.cliCommandLog(this.getClass(), log);
         if (!query.isBlank()) {
-            chatService.chat(query, 6);
+            if (codeMode) {
+                log.info("Running in code mode");
+                chatService.chat(new PromptRole(
+                        query, "code", UserRoles.codePrompt(query),  SYSTEM));
+            } else if (shellMode) {
+                log.info("Running in shell mode");
+                chatService.chat(new PromptRole(
+                        query, "shell", UserRoles.shellPrompt("zsh", "Linux/Manjaro", query), SYSTEM
+                ));
+            } else {
+                log.info("Running in chat mode");
+                chatService.chat(new PromptRole(query, "user", query, USER), 6);
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-package owpk.service;
+package owpk;
 
 public class UserRoles {
 

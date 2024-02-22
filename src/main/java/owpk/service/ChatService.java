@@ -1,7 +1,11 @@
 package owpk.service;
 
+import owpk.model.PromptRole;
+
 public interface ChatService {
-    void chat(String query, int lastMessageCount);
-    void shell(String query);
-    void code(String query);
+    void chat(PromptRole promptRole, int lastMessageCount);
+    void chat(PromptRole promptRole);
+
+    void setUnaryMode();
+    void setStreamMode();
 }

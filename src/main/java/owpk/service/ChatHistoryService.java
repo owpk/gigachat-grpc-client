@@ -79,9 +79,13 @@ public class ChatHistoryService {
                     var stringLine = new String(body);
 
                     if (stringLine.startsWith(ROLE_USER_PAT)) {
-                        linesList = getStrings(GigaChatConstants.Role.USER, linesList, messages);
+                        linesList = getStrings(GigaChatConstants.Role.USER,
+                                linesList, messages);
                     } else if (stringLine.startsWith(ROLE_CHAT_PAT)) {
-                        linesList = getStrings(GigaChatConstants.Role.ASSISTANT, linesList, messages);
+                        linesList = getStrings(GigaChatConstants.Role.ASSISTANT,
+                                linesList, messages);
+                    } else if (stringLine.startsWith(ROLE_PREFIX)) {
+                        linesList = new ArrayList<>();
                     } else {
                         linesList.add(stringLine + "\n");
                     }

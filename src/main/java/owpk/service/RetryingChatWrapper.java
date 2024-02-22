@@ -3,46 +3,41 @@ package owpk.service;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.micronaut.context.ApplicationContext;
-import io.micronaut.inject.qualifiers.Qualifiers;
-import jakarta.inject.Qualifier;
 import lombok.extern.slf4j.Slf4j;
+import owpk.model.PromptRole;
 import owpk.storage.SettingsStore;
 
+// TODO search for aop/proxy solution
 @Slf4j
 public class RetryingChatWrapper implements ChatService {
     private final SettingsStore settingsStore;
     private final AuthorizationRestService authorizationRestService;
-    private final ApplicationContext applicationContext;
-    private ChatService delegate;
+    private final ChatService delegate;
 
     public RetryingChatWrapper(SettingsStore settingsStore,
-                               AuthorizationRestService authorizationRestService,
-                               ApplicationContext applicationContext) {
+                               ChatService delegate,
+                               AuthorizationRestService authorizationRestService) {
         this.settingsStore = settingsStore;
+        this.delegate = delegate;
         this.authorizationRestService = authorizationRestService;
-        this.applicationContext = applicationContext;
     }
 
     public void setUnaryMode() {
-        this.delegate = applicationContext.getBean(UnaryChatServiceImpl.class);
+        delegate.setUnaryMode();
     }
 
     public void setStreamMode() {
-        this.delegate = applicationContext.getBean(StreamChatServiceImpl.class);
-    }
-
-    public void chat(String query, int lastMessageCount) {
-        catchUnauthorized(() -> delegate.chat(query, lastMessageCount));
+        delegate.setStreamMode();
     }
 
     @Override
-    public void shell(String query) {
-        catchUnauthorized(() -> delegate.shell(query));
+    public void chat(PromptRole promptRole, int lastMessageCount) {
+        catchUnauthorized(() -> delegate.chat(promptRole, lastMessageCount));
     }
 
     @Override
-    public void code(String query) {
-        catchUnauthorized(() -> delegate.code(query));
+    public void chat(PromptRole promptRole) {
+        catchUnauthorized(() -> delegate.chat(promptRole));
     }
 
     private void catchUnauthorized(Runnable callable) {
@@ -64,5 +59,4 @@ public class RetryingChatWrapper implements ChatService {
             log.error("Catch retrying exception: " + e);
         }
     }
-
 }

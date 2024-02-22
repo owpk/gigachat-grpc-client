@@ -10,9 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import owpk.api.AuthRestClient;
 import owpk.api.AuthRestClientImpl;
 import owpk.grpc.GigaChatGRpcClient;
-import owpk.service.AuthorizationRestService;
-import owpk.service.UnaryChatServiceImpl;
-import owpk.service.RetryingChatWrapper;
+import owpk.service.*;
 import owpk.storage.SettingsStore;
 import picocli.CommandLine;
 
@@ -99,9 +97,15 @@ public class BeanFactory {
     }
 
     @Singleton
-    public RetryingChatWrapper retryingChatWrapper(SettingsStore settingsStore,
-                                                   AuthorizationRestService authorizationRestService,
-                                                   ApplicationContext ctx) {
-        return new RetryingChatWrapper(settingsStore, authorizationRestService, ctx);
+    public ChatService chatService(GigaChatGRpcClient gRpcClient,
+                                   ChatHistoryService historyService,
+                                   SettingsStore settingsStore) {
+        return new ChatServiceImpl(gRpcClient, historyService, settingsStore);
+    }
+
+    @Singleton
+    public RetryingChatWrapper retryingChatWrapper(SettingsStore settingsStore, ChatService chatService,
+                                                   AuthorizationRestService authorizationRestService) {
+        return new RetryingChatWrapper(settingsStore, chatService, authorizationRestService);
     }
 }
