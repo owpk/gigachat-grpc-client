@@ -16,6 +16,7 @@ import static owpk.Application.showApiDocsHelp;
 @CommandLine.Command(name = "gigachat", description = "GigaChat CLI. Use -h or --help for more information",
         mixinStandardHelpOptions = true, subcommands = {ConfigCommand.class, ModelCommand.class, ChatHistoryCommand.class})
 public class GigaChatCommand implements Runnable {
+    private int cacheLines = 2;
 
     private final LoggingSystem loggingSystem;
 
@@ -63,6 +64,12 @@ public class GigaChatCommand implements Runnable {
     @CommandLine.Option(names = {"-s", "--shell"}, description = "Set shell mode. Return only shell command base on your os and shell names.")
     boolean shellMode;
 
+    @CommandLine.Option(names = {"--no-cache", "-n"}, description = "Disable chat history context")
+    public void setCacheLines(boolean noCache) {
+        if (noCache)
+            cacheLines = 0;
+    }
+
     @Override
     public void run() {
         LoggingUtils.cliCommandLog(this.getClass(), log);
@@ -75,7 +82,7 @@ public class GigaChatCommand implements Runnable {
                 chatService.chat(UserRoles.of(UserRoles.SHELL).apply(query));
             } else {
                 log.info("Running in chat mode");
-                chatService.chat(UserRoles.of(UserRoles.CHAT).apply(query), 4);
+                chatService.chat(UserRoles.of(UserRoles.CHAT).apply(query), cacheLines);
             }
         }
     }
