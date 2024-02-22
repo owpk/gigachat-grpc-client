@@ -56,11 +56,11 @@ public class GigaChatCommand implements Runnable {
     }
 
     // TODO add description
-    @CommandLine.Option(names = {"-c", "--code"}, description = "Set shell mode.")
+    @CommandLine.Option(names = {"-c", "--code"}, description = "Set code mode. Return only code snippet.")
     boolean codeMode;
 
     // TODO add description
-    @CommandLine.Option(names = {"-s", "--shell"}, description = "Set code mode.")
+    @CommandLine.Option(names = {"-s", "--shell"}, description = "Set shell mode. Return only shell command base on your os and shell names.")
     boolean shellMode;
 
     @Override
