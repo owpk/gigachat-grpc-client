@@ -117,8 +117,7 @@ public class ChatServiceImpl implements ChatService {
         log.info("""
                 Building grpc request:
                     Messages count: {}
-                    Messages: {}
-                """, request.getMessagesCount(), request.getMessagesList());
+                """, request.getMessagesCount());
 
         var result = chatRequestHandler.handleChatRequest(request.build());
         persistResponse(result);
