@@ -1,11 +1,14 @@
 package owpk.service;
 
+import com.google.common.io.ByteStreams;
+import io.micronaut.core.util.ArrayUtils;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import owpk.Application;
 import owpk.GigaChatConstants;
 import owpk.model.ChatMessage;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.StringWriter;
@@ -55,46 +58,69 @@ public class ChatHistoryService {
         var messages = new ArrayList<ChatMessage>();
 
         try (var raf = new RandomAccessFile(CHAT_FILE_PATH.toFile(), "r")) {
-            System.out.println();
             long fileLength = CHAT_FILE_PATH.toFile().length();
             raf.seek(fileLength);
 
             var lineBuilder = new StringWriter();
             var linesList = new ArrayList<String>();
+            var byteArrayOut = ByteStreams.newDataOutput();
 
             for (long pointer = fileLength; pointer >= 0; pointer--) {
                 raf.seek(pointer);
-                char c;
-                c = (char) raf.read();
+                byte b = (byte) raf.read();
+                char c = (char) b;
 
                 if (pointer == 0)
                     lineBuilder.append(c);
 
                 if (c == '\r' || c == '\n' || pointer == 0) {
-                    var stringLine = lineBuilder.getBuffer().reverse().toString();
+                    var body = byteArrayOut.toByteArray();
+                    reverse(body);
+                    var stringLine = new String(body);
+
                     if (stringLine.startsWith(ROLE_USER_PAT)) {
-                        var rpcMsg = new ChatMessage(GigaChatConstants.Role.USER,
-                                String.join("", linesList));
-                        messages.add(rpcMsg);
-                        linesList = new ArrayList<>();
+                        linesList = getStrings(GigaChatConstants.Role.USER, linesList, messages);
                     } else if (stringLine.startsWith(ROLE_CHAT_PAT)) {
-                        var rpcMsg = new ChatMessage(GigaChatConstants.Role.ASSISTANT,
-                                String.join("", linesList));
-                        messages.add(rpcMsg);
-                        linesList = new ArrayList<>();
+                        linesList = getStrings(GigaChatConstants.Role.ASSISTANT, linesList, messages);
                     } else
                         linesList.add(stringLine);
-                    lineBuilder = new StringWriter();
+
+                    byteArrayOut = ByteStreams.newDataOutput();
 
                     if (predicate.test(messages.size()))
                         break;
                 } else
-                    lineBuilder.append(c);
+                    byteArrayOut.write(b);
                 fileLength = fileLength - pointer;
             }
             return messages;
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private static ArrayList<String> getStrings(String user, ArrayList<String> linesList,
+                                                ArrayList<ChatMessage> messages) {
+        var rpcMsg = new ChatMessage(user,
+                String.join("", linesList));
+        messages.add(rpcMsg);
+        linesList = new ArrayList<>();
+        return linesList;
+    }
+
+    private static void reverse(byte[] array) {
+        if (array == null) {
+            return;
+        }
+        int i = 0;
+        int j = array.length - 1;
+        byte tmp;
+        while (j > i) {
+            tmp = array[j];
+            array[j] = array[i];
+            array[i] = tmp;
+            j--;
+            i++;
         }
     }
 

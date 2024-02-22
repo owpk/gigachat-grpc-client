@@ -1,7 +1,7 @@
 package owpk;
 
 import io.micronaut.configuration.picocli.PicocliRunner;
-import owpk.cli.GigachatCommand;
+import owpk.cli.GigaChatCommand;
 import owpk.storage.SettingsStore;
 
 import java.io.File;
@@ -62,6 +62,6 @@ public class Application {
 
     public static void main(String[] args) throws IOException {
         init();
-        PicocliRunner.run(GigachatCommand.class, args);
+        PicocliRunner.run(GigaChatCommand.class, args);
     }
 }
