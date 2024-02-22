@@ -1,8 +1,6 @@
 package owpk.service;
 
 import gigachat.v1.Gigachatv1;
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import owpk.GigaChatConstants;
 import owpk.grpc.GigaChatGRpcClient;
@@ -10,10 +8,9 @@ import owpk.model.PromptRole;
 import owpk.storage.SettingsStore;
 
 import java.io.StringWriter;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static owpk.GigaChatConstants.Role.USER;
 
 @Slf4j
 public class ChatServiceImpl implements ChatService {
@@ -72,9 +69,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public void chat(PromptRole promptRole) {
-        baseChatRequest(promptRole,
-                List.of(buildMessage(promptRole.rolePrompt(),
-                        promptRole.messageRoleName())));
+        baseChatRequest(promptRole, Collections.emptyList());
     }
 
     @Override
@@ -82,7 +77,7 @@ public class ChatServiceImpl implements ChatService {
         baseChatRequest(promptRole, readLastMessages(lastMessageCount));
     }
 
-    protected Gigachatv1.ChatRequest.Builder buildRequest(List<Gigachatv1.Message> additionalMessages) {
+    protected Gigachatv1.ChatRequest.Builder createdRequestBuilder(List<Gigachatv1.Message> additionalMessages) {
         return Gigachatv1.ChatRequest.newBuilder()
                 .setModel(settingsStore.getAppSettings().getModel())
                 .addAllMessages(additionalMessages);
@@ -105,16 +100,15 @@ public class ChatServiceImpl implements ChatService {
     }
 
     protected List<Gigachatv1.Message> readLastMessages(int messageCount) {
-        return chatHistoryService.readLastMessages(messageCount, false)
+        return chatHistoryService.readLastMessages(messageCount, true)
                 .stream().map(it -> buildMessage(it.content(), it.role()))
                 .collect(Collectors.toList());
     }
 
     protected void baseChatRequest(PromptRole role,
                                    List<Gigachatv1.Message> messages) {
-
         persistRequest(role.userQuery(), role.messageRoleName());
-        var request = buildRequest(messages);
+        var request = createdRequestBuilder(messages);
         request.addMessages(buildMessage(role.rolePrompt(), role.messageRoleName()));
 
         log.info("""
