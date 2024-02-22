@@ -1,6 +1,7 @@
 package owpk.config;
 
 import com.squareup.okhttp.OkHttpClient;
+import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.core.annotation.Order;
 import jakarta.inject.Inject;
@@ -10,7 +11,7 @@ import owpk.api.AuthRestClient;
 import owpk.api.AuthRestClientImpl;
 import owpk.grpc.GigaChatGRpcClient;
 import owpk.service.AuthorizationRestService;
-import owpk.service.ChatService;
+import owpk.service.UnaryChatServiceImpl;
 import owpk.service.RetryingChatWrapper;
 import owpk.storage.SettingsStore;
 import picocli.CommandLine;
@@ -98,10 +99,9 @@ public class BeanFactory {
     }
 
     @Singleton
-    public RetryingChatWrapper retryingChatWrapper(ChatService chatService,
-                                                   SettingsStore settingsStore,
-                                                   AuthorizationRestService authorizationRestService) {
-        return new RetryingChatWrapper(chatService, settingsStore, authorizationRestService);
+    public RetryingChatWrapper retryingChatWrapper(SettingsStore settingsStore,
+                                                   AuthorizationRestService authorizationRestService,
+                                                   ApplicationContext ctx) {
+        return new RetryingChatWrapper(settingsStore, authorizationRestService, ctx);
     }
-
 }

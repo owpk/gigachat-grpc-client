@@ -43,7 +43,10 @@ public class GigaChatCommand implements Runnable {
 
     @CommandLine.Option(names = {"-u", "--unary"},
             description = "Use unary response type. Default type is stream")
-    boolean useUnary;
+    public void useUnary(boolean useUnary) {
+        if (useUnary) chatService.setUnaryMode();
+        else chatService.setStreamMode();
+    }
 
     @CommandLine.Option(names = "--log-level", description = "Set log level: ERROR | INFO | DEBUG",
             defaultValue = "ERROR", scope = CommandLine.ScopeType.INHERIT)
@@ -54,12 +57,8 @@ public class GigaChatCommand implements Runnable {
     @Override
     public void run() {
         LoggingUtils.cliCommandLog(this.getClass(), log);
-
         if (!query.isBlank()) {
-            if (useUnary)
-                chatService.chat(query);
-            else
-                chatService.chatStream(query);
+            chatService.chat(query, 6);
         }
     }
 }

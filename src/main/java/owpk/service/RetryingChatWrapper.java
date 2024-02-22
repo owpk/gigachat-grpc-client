@@ -2,28 +2,49 @@ package owpk.service;
 
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
+import io.micronaut.context.ApplicationContext;
+import io.micronaut.inject.qualifiers.Qualifiers;
+import jakarta.inject.Qualifier;
 import lombok.extern.slf4j.Slf4j;
 import owpk.storage.SettingsStore;
 
 @Slf4j
-public class RetryingChatWrapper {
-    private final ChatService delegate;
+public class RetryingChatWrapper implements ChatService {
     private final SettingsStore settingsStore;
     private final AuthorizationRestService authorizationRestService;
+    private final ApplicationContext applicationContext;
+    private ChatService delegate;
 
-    public RetryingChatWrapper(ChatService delegate, SettingsStore settingsStore,
-                               AuthorizationRestService authorizationRestService) {
-        this.delegate = delegate;
+    public RetryingChatWrapper(SettingsStore settingsStore,
+                               AuthorizationRestService authorizationRestService,
+                               ApplicationContext applicationContext) {
         this.settingsStore = settingsStore;
         this.authorizationRestService = authorizationRestService;
+        this.applicationContext = applicationContext;
     }
 
-    public void chat(String query) {
-        catchUnauthorized(() -> delegate.chat(query));
+    public void setUnaryMode() {
+        this.delegate = applicationContext.getBean(UnaryChatServiceImpl.class,
+                Qualifiers.byName("chat_unary"));
     }
 
-    public void chatStream(String query) {
-        catchUnauthorized(() -> delegate.chatStream(query));
+    public void setStreamMode() {
+        this.delegate = applicationContext.getBean(UnaryChatServiceImpl.class,
+                Qualifiers.byName("chat_stream"));
+    }
+
+    public void chat(String query, int lastMessageCount) {
+        catchUnauthorized(() -> delegate.chat(query, lastMessageCount));
+    }
+
+    @Override
+    public void shell(String query) {
+        catchUnauthorized(() -> delegate.shell(query));
+    }
+
+    @Override
+    public void code(String query) {
+        catchUnauthorized(() -> delegate.code(query));
     }
 
     private void catchUnauthorized(Runnable callable) {
