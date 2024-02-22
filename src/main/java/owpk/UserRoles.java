@@ -16,7 +16,7 @@ public enum UserRoles {
             CHAT, query -> new RolePromptAction() {
                 @Override
                 public String getMessageRole() {
-                    return GigaChatConstants.Role.USER;
+                    return GigaChatConstants.MessageRole.USER;
                 }
 
                 @Override

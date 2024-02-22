@@ -2,7 +2,7 @@ package owpk;
 
 public interface RolePromptAction {
     default String getMessageRole() {
-        return GigaChatConstants.Role.SYSTEM;
+        return GigaChatConstants.MessageRole.SYSTEM;
     }
 
     String getRolePrompt();

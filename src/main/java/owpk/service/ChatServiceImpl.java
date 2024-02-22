@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import owpk.GigaChatConstants;
 import owpk.RolePromptAction;
 import owpk.grpc.GigaChatGRpcClient;
-import owpk.model.PromptRole;
 import owpk.storage.SettingsStore;
 
 import java.io.StringWriter;
@@ -93,7 +92,7 @@ public class ChatServiceImpl implements ChatService {
 
     protected void persistResponse(String content) {
         chatHistoryService.persistContentToHistory(content,
-                GigaChatConstants.Role.ASSISTANT);
+                GigaChatConstants.MessageRole.ASSISTANT);
     }
 
     protected void persistRequest(String content, String roleName) {

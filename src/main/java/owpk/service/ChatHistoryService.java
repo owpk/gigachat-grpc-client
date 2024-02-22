@@ -1,17 +1,14 @@
 package owpk.service;
 
 import com.google.common.io.ByteStreams;
-import io.micronaut.core.util.ArrayUtils;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import owpk.Application;
 import owpk.GigaChatConstants;
 import owpk.model.ChatMessage;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,8 +22,8 @@ import java.util.function.Predicate;
 @Slf4j
 @Singleton
 public class ChatHistoryService {
-    private static final String ROLE_USER_PAT = formatRoll(GigaChatConstants.Role.USER);
-    private static final String ROLE_CHAT_PAT = formatRoll(GigaChatConstants.Role.ASSISTANT);
+    private static final String ROLE_USER_PAT = formatRoll(GigaChatConstants.MessageRole.USER);
+    private static final String ROLE_CHAT_PAT = formatRoll(GigaChatConstants.MessageRole.ASSISTANT);
     private static final String ROLE_PREFIX = "[[_Role: ";
     private static final String ROLE_SUFFIX = " ]]";
 
@@ -79,10 +76,10 @@ public class ChatHistoryService {
                     var stringLine = new String(body);
 
                     if (stringLine.startsWith(ROLE_USER_PAT)) {
-                        linesList = getStrings(GigaChatConstants.Role.USER,
+                        linesList = getStrings(GigaChatConstants.MessageRole.USER,
                                 linesList, messages);
                     } else if (stringLine.startsWith(ROLE_CHAT_PAT)) {
-                        linesList = getStrings(GigaChatConstants.Role.ASSISTANT,
+                        linesList = getStrings(GigaChatConstants.MessageRole.ASSISTANT,
                                 linesList, messages);
                     } else if (stringLine.startsWith(ROLE_PREFIX)) {
                         linesList = new ArrayList<>();

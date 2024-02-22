@@ -1,6 +1,6 @@
 package owpk.api;
 
-import owpk.JwtRestResponse;
+import owpk.model.JwtRestResponse;
 
 public interface AuthRestClient {
 

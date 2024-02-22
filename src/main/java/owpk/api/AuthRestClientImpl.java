@@ -7,7 +7,7 @@ import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.RequestBody;
 import lombok.extern.slf4j.Slf4j;
-import owpk.JwtRestResponse;
+import owpk.model.JwtRestResponse;
 import owpk.config.AppSettings;
 
 import java.util.Date;

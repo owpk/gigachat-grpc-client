@@ -4,7 +4,7 @@ import io.grpc.Metadata;
 
 import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
 
-public class GigaChatConstants {
+public final class GigaChatConstants {
     public static final String BEARER_TYPE = "Bearer";
     public static final Metadata.Key<String> AUTHORIZATION_METADATA_KEY = Metadata.Key.of("Authorization", ASCII_STRING_MARSHALLER);
 
@@ -12,7 +12,7 @@ public class GigaChatConstants {
         public static final String PERSONAL = "GIGACHAT_API_PERS";
     }
 
-    public static class Role {
+    public static class MessageRole {
 
         // сообщение пользователя;
         public static final String USER = "user";

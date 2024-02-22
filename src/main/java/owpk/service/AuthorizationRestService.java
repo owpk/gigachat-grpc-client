@@ -2,7 +2,7 @@ package owpk.service;
 
 import lombok.extern.slf4j.Slf4j;
 import owpk.GigaChatConstants;
-import owpk.JwtRestResponse;
+import owpk.model.JwtRestResponse;
 import owpk.api.AuthRestClient;
 import owpk.config.AppSettings;
 import owpk.grpc.JwtTokenProvider;

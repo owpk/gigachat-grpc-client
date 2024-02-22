@@ -7,13 +7,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import owpk.LoggingUtils;
 import owpk.UserRoles;
-import owpk.model.PromptRole;
 import owpk.service.RetryingChatWrapper;
 import picocli.CommandLine;
 
 import static owpk.Application.showApiDocsHelp;
-import static owpk.GigaChatConstants.Role.SYSTEM;
-import static owpk.GigaChatConstants.Role.USER;
 
 @Slf4j
 @CommandLine.Command(name = "gigachat", description = "GigaChat CLI. Use -h or --help for more information",
