@@ -13,11 +13,14 @@ import owpk.service.AuthorizationRestService;
 import owpk.service.ChatService;
 import owpk.service.RetryingChatWrapper;
 import owpk.storage.SettingsStore;
+import picocli.CommandLine;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+
+import static owpk.Application.showApiDocsHelp;
 
 @Factory
 @Slf4j
@@ -34,6 +37,12 @@ public class BeanFactory {
     public SettingsStore settingsStore() {
         var settings = new SettingsStore(this.settings);
         settings.init();
+        settings.validate(() -> {
+            System.out.println(CommandLine.Help.Ansi.AUTO.string(
+                    "@|bold,fg(yellow) Specify your credentials!|@"));
+            showApiDocsHelp();
+            System.out.print("Input 'Basic' auth: ");
+        });
         return settings;
     }
 
@@ -90,8 +99,9 @@ public class BeanFactory {
 
     @Singleton
     public RetryingChatWrapper retryingChatWrapper(ChatService chatService,
+                                                   SettingsStore settingsStore,
                                                    AuthorizationRestService authorizationRestService) {
-        return new RetryingChatWrapper(chatService, authorizationRestService);
+        return new RetryingChatWrapper(chatService, settingsStore, authorizationRestService);
     }
 
 }

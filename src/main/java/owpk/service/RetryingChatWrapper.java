@@ -3,14 +3,18 @@ package owpk.service;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import lombok.extern.slf4j.Slf4j;
+import owpk.storage.SettingsStore;
 
 @Slf4j
 public class RetryingChatWrapper {
     private final ChatService delegate;
+    private final SettingsStore settingsStore;
     private final AuthorizationRestService authorizationRestService;
 
-    public RetryingChatWrapper(ChatService delegate, AuthorizationRestService authorizationRestService) {
+    public RetryingChatWrapper(ChatService delegate, SettingsStore settingsStore,
+                               AuthorizationRestService authorizationRestService) {
         this.delegate = delegate;
+        this.settingsStore = settingsStore;
         this.authorizationRestService = authorizationRestService;
     }
 
@@ -33,6 +37,7 @@ public class RetryingChatWrapper {
                     authorizationRestService.refreshToken();
                     callable.run();
                 } catch (Exception ex) {
+                    settingsStore.setProperty("gigachat.composedCredentials", "");
                     throw new RuntimeException("Error while refreshing token", ex);
                 }
             } else throw e;
@@ -40,4 +45,5 @@ public class RetryingChatWrapper {
             log.error("Catch retrying exception: " + e);
         }
     }
+
 }

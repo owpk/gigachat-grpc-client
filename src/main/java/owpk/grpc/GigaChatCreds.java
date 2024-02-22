@@ -3,13 +3,12 @@ package owpk.grpc;
 import io.grpc.CallCredentials;
 import io.grpc.Metadata;
 import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.Executor;
 
-import static owpk.Constants.AUTHORIZATION_METADATA_KEY;
-import static owpk.Constants.BEARER_TYPE;
+import static owpk.GigaChatConstants.AUTHORIZATION_METADATA_KEY;
+import static owpk.GigaChatConstants.BEARER_TYPE;
 
 @Slf4j
 public class GigaChatCreds extends CallCredentials {

@@ -1,7 +1,7 @@
 package owpk.service;
 
 import lombok.extern.slf4j.Slf4j;
-import owpk.Constants;
+import owpk.GigaChatConstants;
 import owpk.JwtRestResponse;
 import owpk.api.AuthRestClient;
 import owpk.config.AppSettings;
@@ -15,18 +15,17 @@ public class AuthorizationRestService implements JwtTokenProvider {
     private final AuthRestClient client;
     private final AppSettings settings;
     private final SettingsStore settingsStore;
-    private final String credentialsHash;
 
     public AuthorizationRestService(AuthRestClient client, SettingsStore settingsStore) {
         this.client = client;
         this.settings = settingsStore.getAppSettings();
-        credentialsHash = settings.getComposedCredentials();
         this.settingsStore = settingsStore;
     }
 
     @Override
     public String getJwt() {
         log.info("JWT: Attempt to retrieve jwt token...");
+
         var currentJwt = settings.getJwt();
         if (currentJwt != null && currentJwt.getAccessToken() != null
                 && validateExpiration(currentJwt.getExpiresAt())) {
@@ -40,7 +39,7 @@ public class AuthorizationRestService implements JwtTokenProvider {
     @Override
     public JwtRestResponse refreshToken() {
         log.info("JWT: Attempting to refresh token...");
-        var jwt = client.authorize(Constants.GigachatScope.PERSONAL, credentialsHash);
+        var jwt = client.authorize(GigaChatConstants.Scope.PERSONAL, settings.getComposedCredentials());
         rewriteJwt(jwt);
         return jwt;
     }
