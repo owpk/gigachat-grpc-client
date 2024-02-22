@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 @Slf4j
-@CommandLine.Command(name = "history", aliases = {"hs", "h"}, description = "Chat with GigaChat.",
+@CommandLine.Command(name = "history", aliases = {"hs", "h"}, description = "Show chat history.",
         mixinStandardHelpOptions = true)
 public class ChatHistoryCommand implements Runnable {
 
