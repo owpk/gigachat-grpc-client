@@ -20,7 +20,6 @@ public class Application {
 
     private static void init() throws IOException {
         initConfigHome();
-        initFileLogger();
         System.setProperty("micronaut.config.files", settingsHome);
     }
 
@@ -42,25 +41,6 @@ public class Application {
         }
     }
 
-    //TODO native image crashes with it, need to fix
-    private static void initFileLogger() {
-//        var ctx = (LoggerContext) LoggerFactory.getILoggerFactory();
-//        var rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-//
-//        var ple = new PatternLayoutEncoder();
-//        ple.setPattern(LoggingUtils.LOGGING_PATTERN);
-//        ple.setContext(ctx);
-//        ple.start();
-//
-//        var appender = new FileAppender<ILoggingEvent>();
-//        appender.setName("FILE");
-//        appender.setFile(Paths.get(appHome,  "gigachat.log").toString());
-//        appender.setEncoder(ple);
-//        appender.setContext(ctx);
-//        appender.start();
-//
-//        rootLogger.addAppender(appender);
-    }
 
     public static void main(String[] args) throws IOException {
         try {
@@ -71,4 +51,13 @@ public class Application {
             System.out.println("Error while running command: " + e.getLocalizedMessage());
         }
     }
+
+    public static void showApiDocsHelp() {
+        System.out.println("""
+                Please visit
+                \thttps://developers.sber.ru/docs/ru/gigachat/api/reference/rest/post-token
+                \tfor more information
+                """);
+    }
+
 }

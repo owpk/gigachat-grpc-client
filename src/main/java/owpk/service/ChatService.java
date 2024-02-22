@@ -34,10 +34,10 @@ public class ChatService {
     }
 
     public void chatStream(String query) {
-        var iter = gigaChatGRpcClient.chatStream(buildRequest(query));
+        var iterator = gigaChatGRpcClient.chatStream(buildRequest(query));
         var sw = new StringWriter();
-        while (iter.hasNext()) {
-            var msg = iter.next();
+        while (iterator.hasNext()) {
+            var msg = iterator.next();
             var content = msg.getAlternativesList().stream().map(a -> a.getMessage().getContent())
                     .collect(Collectors.joining(" "));
             sw.append(content);
@@ -79,5 +79,4 @@ public class ChatService {
                 .setContent(content)
                 .build();
     }
-
 }

@@ -25,6 +25,7 @@ public class AuthorizationRestService implements JwtTokenProvider {
     @Override
     public String getJwt() {
         log.info("JWT: Attempt to retrieve jwt token...");
+
         var currentJwt = settings.getJwt();
         if (currentJwt != null && currentJwt.getAccessToken() != null
                 && validateExpiration(currentJwt.getExpiresAt())) {
