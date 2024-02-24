@@ -3,27 +3,25 @@ package owpk.cli;
 import jakarta.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import owpk.LoggingUtils;
-import owpk.storage.SettingsStore;
+import owpk.storage.main.MainSettingField;
+import owpk.storage.main.MainSettingsStore;
 import picocli.CommandLine;
 
 @CommandLine.Command(name = "config", aliases = {"cfg", "conf"}, description = "Create or show config.")
 @Slf4j
 public class ConfigCommand implements Runnable {
-    private final SettingsStore settingsStore;
+    private final MainSettingsStore mainSettingsStore;
 
     @Inject
-    public ConfigCommand(SettingsStore settingsStore) {
-        this.settingsStore = settingsStore;
+    public ConfigCommand(MainSettingsStore mainSettingsStore) {
+        this.mainSettingsStore = mainSettingsStore;
     }
 
     @CommandLine.Option(names = {"-s", "--show"}, description = "Show this help message and exit.")
     boolean showProperties;
 
-    @CommandLine.Option(names = {"-c", "--create"}, description = "Create default config.")
+    @CommandLine.Option(names = {"-c", "--create"}, description = "Rewrite settings file with default config.")
     boolean createConfig;
-
-    @CommandLine.Option(names = {"-f", "--force"}, description = "Force override existing config or create new if not exists.")
-    boolean force;
 
     @CommandLine.Option(names = {"-d", "--credentials"}, description = "Set credentials property.")
     String credentials;
@@ -32,21 +30,13 @@ public class ConfigCommand implements Runnable {
     public void run() {
         LoggingUtils.cliCommandLog(this.getClass(), log);
         if (showProperties)
-            settingsStore.getProperties()
+            mainSettingsStore.getProperties()
                     .forEach((k, v) -> System.out.println(k + " : " + v));
         else if (createConfig) {
-            if (force) {
-                settingsStore.writeDefaultProperties();
-                System.out.println("Settings file rewritten successfully!");
-            } else {
-                var file = settingsStore.getSettingsFile();
-                if (settingsStore.getSettingsFile().exists()) {
-                    System.out.println("Settings file exists: " + file.getAbsolutePath());
-                    System.out.println("Use -f or --force to force override");
-                }
-            }
+            mainSettingsStore.createDefaults();
+            System.out.println("Settings file rewritten successfully!");
         } else if (credentials != null && !credentials.isBlank()) {
-            settingsStore.setProperty("gigachat.composedCredentials", credentials);
+            mainSettingsStore.setProperty(MainSettingField.COMPOSED_CREDENTIALS.name(), credentials);
             System.out.println("Credentials saved successfully!");
         }
     }

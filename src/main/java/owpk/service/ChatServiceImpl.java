@@ -5,7 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import owpk.GigaChatConstants;
 import owpk.RolePromptAction;
 import owpk.grpc.GigaChatGRpcClient;
-import owpk.storage.SettingsStore;
+import owpk.storage.main.MainSettings;
+import owpk.storage.main.MainSettingsStore;
 
 import java.io.StringWriter;
 import java.util.Collections;
@@ -15,7 +16,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ChatServiceImpl implements ChatService {
     protected final GigaChatGRpcClient gigaChatGRpcClient;
-    protected final SettingsStore settingsStore;
+    protected final MainSettings mainSettings;
     protected final ChatHistoryService chatHistoryService;
     private ChatRequestHandler chatRequestHandler;
 
@@ -26,10 +27,10 @@ public class ChatServiceImpl implements ChatService {
 
     public ChatServiceImpl(GigaChatGRpcClient gigaChatGRpcClient,
                            ChatHistoryService chatHistoryService,
-                           SettingsStore settingsStore) {
+                           MainSettingsStore mainSettingsStore) {
         this.gigaChatGRpcClient = gigaChatGRpcClient;
         this.chatHistoryService = chatHistoryService;
-        this.settingsStore = settingsStore;
+        this.mainSettings = mainSettingsStore.getMainSettings();
         this.chatRequestHandler = streamMode();
     }
 
@@ -79,7 +80,7 @@ public class ChatServiceImpl implements ChatService {
 
     protected Gigachatv1.ChatRequest.Builder createdRequestBuilder(List<Gigachatv1.Message> additionalMessages) {
         return Gigachatv1.ChatRequest.newBuilder()
-                .setModel(settingsStore.getAppSettings().getModel())
+                .setModel(mainSettings.getModel())
                 .addAllMessages(additionalMessages);
     }
 

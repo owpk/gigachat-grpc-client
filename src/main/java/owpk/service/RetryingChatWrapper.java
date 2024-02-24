@@ -2,23 +2,23 @@ package owpk.service;
 
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.micronaut.context.ApplicationContext;
 import lombok.extern.slf4j.Slf4j;
 import owpk.RolePromptAction;
-import owpk.model.PromptRole;
-import owpk.storage.SettingsStore;
+import owpk.storage.main.MainSettingField;
+import owpk.storage.main.MainSettings;
+import owpk.storage.main.MainSettingsStore;
 
 // TODO search for aop/proxy solution
 @Slf4j
 public class RetryingChatWrapper implements ChatService {
-    private final SettingsStore settingsStore;
+    private final MainSettingsStore mainSettingsStore;
     private final AuthorizationRestService authorizationRestService;
     private final ChatService delegate;
 
-    public RetryingChatWrapper(SettingsStore settingsStore,
+    public RetryingChatWrapper(MainSettingsStore mainSettingsStore,
                                ChatService delegate,
                                AuthorizationRestService authorizationRestService) {
-        this.settingsStore = settingsStore;
+        this.mainSettingsStore = mainSettingsStore;
         this.delegate = delegate;
         this.authorizationRestService = authorizationRestService;
     }
@@ -52,7 +52,7 @@ public class RetryingChatWrapper implements ChatService {
                     authorizationRestService.refreshToken();
                     callable.run();
                 } catch (Exception ex) {
-                    settingsStore.setProperty("gigachat.composedCredentials", "");
+                    mainSettingsStore.setProperty(MainSettingField.COMPOSED_CREDENTIALS.getPropertyKey(), "");
                     throw new RuntimeException("Error while refreshing token", ex);
                 }
             } else throw e;

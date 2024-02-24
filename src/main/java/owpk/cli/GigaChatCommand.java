@@ -20,12 +20,12 @@ public class GigaChatCommand implements Runnable {
 
     private final LoggingSystem loggingSystem;
 
-    private final RetryingChatWrapper chatService;
+    private final RetryingChatWrapper retryingChatWrapper;
 
     @Inject
-    public GigaChatCommand(LoggingSystem loggingSystem, RetryingChatWrapper chatService) {
+    public GigaChatCommand(LoggingSystem loggingSystem, RetryingChatWrapper retryingChatWrapper) {
         this.loggingSystem = loggingSystem;
-        this.chatService = chatService;
+        this.retryingChatWrapper = retryingChatWrapper;
     }
 
     @CommandLine.Option(names = {"-h", "--help"}, defaultValue = "false", description = "Display help information.")
@@ -46,8 +46,8 @@ public class GigaChatCommand implements Runnable {
     @CommandLine.Option(names = {"-u", "--unary"},
             description = "Use unary response type. Default type is stream", defaultValue = "false")
     public void useUnary(boolean useUnary) {
-        if (useUnary) chatService.setUnaryMode();
-        else chatService.setStreamMode();
+        if (useUnary) retryingChatWrapper.setUnaryMode();
+        else retryingChatWrapper.setStreamMode();
     }
 
     @CommandLine.Option(names = "--log-level", description = "Set log level: ERROR | INFO | DEBUG",
@@ -76,13 +76,13 @@ public class GigaChatCommand implements Runnable {
         if (!query.isBlank()) {
             if (codeMode) {
                 log.info("Running in code mode");
-                chatService.chat(UserRoles.of(UserRoles.CODE).apply(query));
+                retryingChatWrapper.chat(UserRoles.of(UserRoles.CODE).apply(query));
             } else if (shellMode) {
                 log.info("Running in shell mode");
-                chatService.chat(UserRoles.of(UserRoles.SHELL).apply(query));
+                retryingChatWrapper.chat(UserRoles.of(UserRoles.SHELL).apply(query));
             } else {
                 log.info("Running in chat mode");
-                chatService.chat(UserRoles.of(UserRoles.CHAT).apply(query), cacheLines);
+                retryingChatWrapper.chat(UserRoles.of(UserRoles.CHAT).apply(query), cacheLines);
             }
         }
     }

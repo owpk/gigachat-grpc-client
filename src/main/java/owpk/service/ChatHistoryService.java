@@ -29,7 +29,7 @@ public class ChatHistoryService {
 
     // TODO exclude to some props
     private static final Path CHAT_FILE_PATH =
-            Paths.get(Application.appHome, "chat");
+            Paths.get(Application.APP_HOME_DIR.toString(), "chat");
 
     private static String formatRoll(String pattern) {
         return ROLE_PREFIX + "{" + pattern + "}" + ROLE_SUFFIX;

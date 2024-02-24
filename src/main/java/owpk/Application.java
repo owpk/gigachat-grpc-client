@@ -3,21 +3,21 @@ package owpk;
 import io.micronaut.configuration.picocli.PicocliRunner;
 import lombok.extern.slf4j.Slf4j;
 import owpk.cli.GigaChatCommand;
-import owpk.storage.SettingsStore;
+import owpk.storage.FileSettingsStore;
+import owpk.storage.main.MainSettingsStore;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @Slf4j
 public class Application {
-
-    public static final String userHome = System.getProperty("user.home");
-    public static final String appHome = userHome + File.separator + ".gigachat-cli";
-    public static final String settingsHome = appHome + File.separator + "gigachat.properties";
-    public static File homeDir = new File(appHome);
-    public static File settingsFile;
+    public static final String USER_HOME = System.getProperty("user.home");
+    private static final String APP_HOME_NAME = ".gigachat-cli";
+    private static final String APP_CONFIG_NAME = "gigachat.properties";
+    public static final Path APP_HOME_DIR = Paths.get(USER_HOME, APP_HOME_NAME);
+    public static final Path SETTINGS_FILE = Paths.get(APP_HOME_DIR.toString(), APP_CONFIG_NAME);
     public static String osName;
 
     private static void init() throws IOException {
@@ -28,29 +28,23 @@ public class Application {
             osName = System.getProperty("os.name");
         }
         initConfigHome();
-        System.setProperty("micronaut.config.files", settingsHome);
     }
 
     private static void initConfigHome() throws IOException {
-        settingsFile = new File(settingsHome);
-        var parent = settingsFile.getParentFile();
-
-        if (parent != null && !parent.exists() && !parent.mkdirs())
-            throw new IllegalStateException("Couldn't create dir: " + parent);
-
-        if (!settingsFile.exists()) {
-            if (settingsFile.createNewFile()) {
-                System.out.println("Creating new settings file: " + settingsFile.getAbsolutePath());
-                var defaults = SettingsStore.getDefaltProperties();
-                SettingsStore.storeProps(defaults, settingsFile);
-            } else {
-                throw new IllegalStateException("Cannot create settings file");
+        if (!Files.exists(APP_HOME_DIR) && !Files.exists(Files.createDirectories(APP_HOME_DIR)))
+            throw new IllegalStateException("Couldn't create dir: " + APP_HOME_DIR);
+        if (!Files.exists(SETTINGS_FILE)) {
+            if (!Files.exists(Files.createFile(SETTINGS_FILE)))
+                throw new IllegalStateException("Couldn't create dir: " + APP_HOME_DIR);
+            else {
+                System.out.println("Creating new settings file: " + SETTINGS_FILE);
+                var defaults = MainSettingsStore.getDefaltProperties();
+                FileSettingsStore.storeProps(defaults, SETTINGS_FILE);
             }
         }
     }
 
-
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         try {
             init();
             PicocliRunner.run(GigaChatCommand.class, args);
