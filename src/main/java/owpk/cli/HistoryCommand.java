@@ -9,12 +9,12 @@ import picocli.CommandLine;
 @Slf4j
 @CommandLine.Command(name = "history", aliases = {"hs", "h"}, description = "Show chat history.",
         mixinStandardHelpOptions = true)
-public class ChatHistoryCommand implements Runnable {
+public class HistoryCommand implements Runnable {
 
     private final ChatHistoryService chatHistoryService;
 
     @Inject
-    public ChatHistoryCommand(ChatHistoryService chatHistoryService) {
+    public HistoryCommand(ChatHistoryService chatHistoryService) {
         this.chatHistoryService = chatHistoryService;
     }
 

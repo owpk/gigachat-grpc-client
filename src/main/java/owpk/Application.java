@@ -2,7 +2,7 @@ package owpk;
 
 import io.micronaut.configuration.picocli.PicocliRunner;
 import lombok.extern.slf4j.Slf4j;
-import owpk.cli.GigaChatCommand;
+import owpk.cli.ChatCommand;
 import owpk.storage.FileSettingsStore;
 import owpk.storage.main.MainSettingsStore;
 
@@ -47,7 +47,7 @@ public class Application {
     public static void main(String[] args) {
         try {
             init();
-            PicocliRunner.run(GigaChatCommand.class, args);
+            PicocliRunner.run(ChatCommand.class, args);
         } catch (Throwable e) {
             log.info("Error while running command.", e);
             System.out.println("Error while running command: " + e.getLocalizedMessage());

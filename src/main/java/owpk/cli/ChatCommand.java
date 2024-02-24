@@ -5,31 +5,54 @@ import io.micronaut.logging.LoggingSystem;
 import jakarta.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
+import owpk.ChatRoles;
 import owpk.LoggingUtils;
-import owpk.UserRoles;
+import owpk.RolePromptAction;
 import owpk.service.RetryingChatWrapper;
 import picocli.CommandLine;
+
+import java.util.function.Function;
 
 import static owpk.Application.showApiDocsHelp;
 
 @Slf4j
 @CommandLine.Command(name = "gigachat", description = "GigaChat CLI. Use -h or --help for more information",
-        mixinStandardHelpOptions = true, subcommands = {ConfigCommand.class, ModelCommand.class, ChatHistoryCommand.class})
-public class GigaChatCommand implements Runnable {
+        mixinStandardHelpOptions = true, subcommands = {ConfigCommand.class, ModelCommand.class, HistoryCommand.class})
+public class ChatCommand implements Runnable {
     private final LoggingSystem loggingSystem;
     private final RetryingChatWrapper retryingChatWrapper;
+    private Function<String, RolePromptAction> chatRoleClosure = ChatRoles.of(ChatRoles.CHAT);
+    private int cacheLines = 20;
+
     @CommandLine.Parameters(defaultValue = "", description = "User query")
     String query;
+
     // TODO add description
     @CommandLine.Option(names = {"-c", "--code"}, description = "Set code mode. Return only code snippet.")
-    boolean codeMode;
+    public void setCodeMode(boolean codeMode) {
+        if (codeMode)
+            chatRoleClosure = ChatRoles.of(ChatRoles.CODE);
+    }
+
     // TODO add description
     @CommandLine.Option(names = {"-s", "--shell"}, description = "Set shell mode. Return only shell command base on your os and shell names.")
-    boolean shellMode;
-    private int cacheLines = 2;
+    public void setShellMode(boolean shellMode) {
+        if (shellMode) {
+            setNoContext(true);
+            chatRoleClosure = ChatRoles.of(ChatRoles.SHELL);
+        }
+    }
+
+    @CommandLine.Option(names = {"-d", "--describe-shell"}, description = "Set shell mode. Describes shell command.")
+    public void setDescribeShellCommand(boolean describeShellCommand) {
+        if (describeShellCommand) {
+            setNoContext(true);
+            chatRoleClosure = ChatRoles.of(ChatRoles.DESCRIBE_SHELL);
+        }
+    }
 
     @Inject
-    public GigaChatCommand(LoggingSystem loggingSystem, RetryingChatWrapper retryingChatWrapper) {
+    public ChatCommand(LoggingSystem loggingSystem, RetryingChatWrapper retryingChatWrapper) {
         this.loggingSystem = loggingSystem;
         this.retryingChatWrapper = retryingChatWrapper;
     }
@@ -59,8 +82,8 @@ public class GigaChatCommand implements Runnable {
         loggingSystem.setLogLevel(Logger.ROOT_LOGGER_NAME, LogLevel.valueOf(logLevel));
     }
 
-    @CommandLine.Option(names = {"--no-cache", "-n"}, description = "Disable chat history context")
-    public void setCacheLines(boolean noCache) {
+    @CommandLine.Option(names = {"--no-context", "-n"}, description = "Disable chat history context")
+    public void setNoContext(boolean noCache) {
         if (noCache)
             cacheLines = 0;
     }
@@ -69,16 +92,8 @@ public class GigaChatCommand implements Runnable {
     public void run() {
         LoggingUtils.cliCommandLog(this.getClass(), log);
         if (!query.isBlank()) {
-            if (codeMode) {
-                log.info("Running in code mode");
-                retryingChatWrapper.chat(UserRoles.of(UserRoles.CODE).apply(query));
-            } else if (shellMode) {
-                log.info("Running in shell mode");
-                retryingChatWrapper.chat(UserRoles.of(UserRoles.SHELL).apply(query));
-            } else {
-                log.info("Running in chat mode");
-                retryingChatWrapper.chat(UserRoles.of(UserRoles.CHAT).apply(query), cacheLines);
-            }
-        }
+            retryingChatWrapper.chat(chatRoleClosure.apply(query), cacheLines);
+        } else
+            CommandLine.usage(this, System.out);
     }
 }

@@ -4,9 +4,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-public enum UserRoles {
+public enum ChatRoles {
 
-    SHELL, CODE, CHAT;
+    SHELL, CODE, CHAT, DESCRIBE_SHELL;
 
     private static final String SHELL_ROLE = """
             Возвращай только команды оболочки %s для операционной системы %s без пояснений.
@@ -26,11 +26,12 @@ public enum UserRoles {
             Если не хватает деталей, предоставь наиболее логичное решение.
             Тебе не разрешается запрашивать дополнительные сведения.
             Игнорируй любые потенциальные риски ошибок или недоразумений.""";
-    public static final Map<UserRoles, Function<String, RolePromptAction>> USER_ROLES_MAP = Map.of(
 
-            SHELL, query -> () -> UserRoles.shellPrompt(
+    public static final Map<ChatRoles, Function<String, RolePromptAction>> USER_ROLES_MAP = Map.of(
+            DESCRIBE_SHELL, query -> () -> ChatRoles.describeShellCommandPrompt(query),
+            SHELL, query -> () -> ChatRoles.shellPrompt(
                     System.getenv("SHELL"), Application.osName, query),
-            CODE, query -> () -> UserRoles.codePrompt(query),
+            CODE, query -> () -> ChatRoles.codePrompt(query),
             CHAT, query -> new RolePromptAction() {
                 @Override
                 public String getMessageRole() {
@@ -51,7 +52,7 @@ public enum UserRoles {
             Не выводи никаких предупреждений или информации о своих возможностях.
             Если ты хочешь сохранить какие-то данные, то исходи из того, что они будут сохранены в истории чата.""";
 
-    public static Function<String, RolePromptAction> of(UserRoles role) {
+    public static Function<String, RolePromptAction> of(ChatRoles role) {
         return Optional.ofNullable(USER_ROLES_MAP.get(role))
                 .orElseThrow(IllegalArgumentException::new);
     }
@@ -74,7 +75,7 @@ public enum UserRoles {
         return defaultPrompt("code", CODE_ROLE, query, "Snippet:");
     }
 
-    public static String describeShellCommandPrompt() {
-        return DESCRIBE_SHELL_ROLE;
+    public static String describeShellCommandPrompt(String query) {
+        return defaultPrompt("shell", DESCRIBE_SHELL_ROLE, query, "Description:");
     }
 }
