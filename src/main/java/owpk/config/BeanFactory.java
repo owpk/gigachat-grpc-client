@@ -1,17 +1,15 @@
 package owpk.config;
 
 import com.squareup.okhttp.OkHttpClient;
-import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.core.annotation.Order;
-import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import owpk.api.AuthRestClient;
 import owpk.api.AuthRestClientImpl;
 import owpk.grpc.GigaChatGRpcClient;
 import owpk.service.*;
-import owpk.storage.SettingsStore;
+import owpk.storage.main.MainSettingsStore;
 import picocli.CommandLine;
 
 import javax.net.ssl.SSLContext;
@@ -24,17 +22,11 @@ import static owpk.Application.showApiDocsHelp;
 @Factory
 @Slf4j
 public class BeanFactory {
-    private final AppSettings settings;
-
-    @Inject
-    public BeanFactory(AppSettings settings) {
-        this.settings = settings;
-    }
 
     @Singleton
     @Order(value = Integer.MAX_VALUE)
-    public SettingsStore settingsStore() {
-        var settings = new SettingsStore(this.settings);
+    public MainSettingsStore settingsStore() {
+        var settings = new MainSettingsStore();
         settings.init();
         settings.validate(() -> {
             System.out.println(CommandLine.Help.Ansi.AUTO.string(
@@ -82,30 +74,30 @@ public class BeanFactory {
     }
 
     @Singleton
-    public AuthRestClient authRestClient(OkHttpClient okHttpClient) {
+    public AuthRestClient authRestClient(OkHttpClient okHttpClient, MainSettingsStore settings) {
         return new AuthRestClientImpl(settings, okHttpClient);
     }
 
     @Singleton
-    public AuthorizationRestService authorizationRestService(AuthRestClient authRestClient, SettingsStore settingsStore) {
-        return new AuthorizationRestService(authRestClient, settingsStore);
+    public AuthorizationRestService authorizationRestService(AuthRestClient authRestClient, MainSettingsStore mainSettingsStore) {
+        return new AuthorizationRestService(authRestClient, mainSettingsStore);
     }
 
     @Singleton
-    public GigaChatGRpcClient gRpcClient(AuthorizationRestService authorizationRestService) throws SSLException {
-        return new GigaChatGRpcClient(settings.getTarget(), authorizationRestService);
+    public GigaChatGRpcClient gRpcClient(AuthorizationRestService authorizationRestService, MainSettingsStore settings) throws SSLException {
+        return new GigaChatGRpcClient(settings.getMainSettings().getTarget(), authorizationRestService);
     }
 
     @Singleton
     public ChatService chatService(GigaChatGRpcClient gRpcClient,
                                    ChatHistoryService historyService,
-                                   SettingsStore settingsStore) {
-        return new ChatServiceImpl(gRpcClient, historyService, settingsStore);
+                                   MainSettingsStore mainSettingsStore) {
+        return new ChatServiceImpl(gRpcClient, historyService, mainSettingsStore);
     }
 
     @Singleton
-    public RetryingChatWrapper retryingChatWrapper(SettingsStore settingsStore, ChatService chatService,
+    public RetryingChatWrapper retryingChatWrapper(MainSettingsStore mainSettingsStore, ChatService chatService,
                                                    AuthorizationRestService authorizationRestService) {
-        return new RetryingChatWrapper(settingsStore, chatService, authorizationRestService);
+        return new RetryingChatWrapper(mainSettingsStore, chatService, authorizationRestService);
     }
 }

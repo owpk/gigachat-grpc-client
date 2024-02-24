@@ -4,6 +4,7 @@ plugins {
     id "io.micronaut.aot" version "4.3.2"
     id "com.google.protobuf" version "0.9.4"
     id 'application'
+    id 'java'
 }
 
 application {
@@ -16,6 +17,8 @@ group = "owpk"
 repositories {
     mavenCentral()
 }
+
+compileJava {options.encoding = "UTF-8"}
 
 def grpcVersion = '1.61.0'
 def protobufVersion = '3.25.1'
