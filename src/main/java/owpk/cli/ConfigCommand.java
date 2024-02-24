@@ -2,7 +2,7 @@ package owpk.cli;
 
 import jakarta.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
-import owpk.LoggingUtils;
+import owpk.utils.LoggingUtils;
 import owpk.storage.main.MainSettingField;
 import owpk.storage.main.MainSettingsStore;
 import picocli.CommandLine;

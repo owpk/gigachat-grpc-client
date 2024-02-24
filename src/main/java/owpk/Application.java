@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import owpk.cli.ChatCommand;
 import owpk.storage.FileSettingsStore;
 import owpk.storage.main.MainSettingsStore;
+import owpk.utils.FileUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,7 +21,7 @@ public class Application {
     public static final Path SETTINGS_FILE = Paths.get(APP_HOME_DIR.toString(), APP_CONFIG_NAME);
     public static String osName;
 
-    private static void init() throws IOException {
+    private static void init() {
         try {
             var rawOsName = Files.readString(Paths.get("/etc/issue"));
             osName = rawOsName.substring(0, rawOsName.indexOf("\\")).trim();
@@ -30,17 +31,11 @@ public class Application {
         initConfigHome();
     }
 
-    private static void initConfigHome() throws IOException {
-        if (!Files.exists(APP_HOME_DIR) && !Files.exists(Files.createDirectories(APP_HOME_DIR)))
-            throw new IllegalStateException("Couldn't create dir: " + APP_HOME_DIR);
-        if (!Files.exists(SETTINGS_FILE)) {
-            if (!Files.exists(Files.createFile(SETTINGS_FILE)))
-                throw new IllegalStateException("Couldn't create dir: " + APP_HOME_DIR);
-            else {
-                System.out.println("Creating new settings file: " + SETTINGS_FILE);
-                var defaults = MainSettingsStore.getDefaltProperties();
-                FileSettingsStore.storeProps(defaults, SETTINGS_FILE);
-            }
+    private static void initConfigHome() {
+        if (FileUtils.createFileWithDirs(SETTINGS_FILE)) {
+            System.out.println("Creating new settings file: " + SETTINGS_FILE);
+            var defaults = MainSettingsStore.getDefaltProperties();
+            FileSettingsStore.storeProps(defaults, SETTINGS_FILE);
         }
     }
 

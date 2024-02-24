@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import owpk.Application;
 import owpk.GigaChatConstants;
 import owpk.model.ChatMessage;
+import owpk.utils.FileUtils;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -14,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,16 +29,14 @@ public class ChatHistoryService {
     private static final String ROLE_USER_PAT = formatRoll(GigaChatConstants.MessageRole.USER);
     private static final String ROLE_CHAT_PAT = formatRoll(GigaChatConstants.MessageRole.ASSISTANT);
     // TODO exclude to some props
+    private static final String FILE_NAME = String.format("chat-%s.md",
+            new SimpleDateFormat("yyyy-MM-dd").format(System.currentTimeMillis()));
+
     private static final Path CHAT_FILE_PATH =
-            Paths.get(Application.APP_HOME_DIR.toString(), "chat");
+            Paths.get(Application.APP_HOME_DIR.toString(), "chats", FILE_NAME);
 
     public ChatHistoryService() {
-        try {
-            if (!Files.exists(CHAT_FILE_PATH))
-                Files.createFile(CHAT_FILE_PATH);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        FileUtils.createFileWithDirs(CHAT_FILE_PATH);
     }
 
     private static String formatRoll(String pattern) {
@@ -54,9 +54,8 @@ public class ChatHistoryService {
     }
 
     private static void reverse(byte[] array) {
-        if (array == null) {
+        if (array == null)
             return;
-        }
         int i = 0;
         int j = array.length - 1;
         byte tmp;

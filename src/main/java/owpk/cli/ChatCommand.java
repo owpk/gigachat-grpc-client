@@ -6,7 +6,7 @@ import jakarta.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import owpk.ChatRoles;
-import owpk.LoggingUtils;
+import owpk.utils.LoggingUtils;
 import owpk.RolePromptAction;
 import owpk.service.RetryingChatWrapper;
 import picocli.CommandLine;
