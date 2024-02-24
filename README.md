@@ -37,10 +37,9 @@ Ignore any potential risks of errors or misunderstandings.""";
 
 Use ```"-s" or "--shell"``` flag to enter ```shell role```
 <details open>
-<summary>Code role prompt:</summary>
+<summary>Shell role prompt:</summary>
 <br>
-Return only the code without description.
-Return only %s shell commands for operating system %s without explanation.
+Return only shell <shell> commands for operating system <system> without explanation.
 If there are not enough details, then provide the most logical solution.
 Make sure you are returning a valid shell command.
 If several commands are required, try to combine them into one.
@@ -48,7 +47,7 @@ If several commands are required, try to combine them into one.
 
 Use ```"-d" or "--describe-shell"``` flag to enter shell command ```description role```
 <details open>
-<summary>Code role prompt:</summary>
+<summary>Describe command role prompt:</summary>
 <br>
 Provide a brief one-sentence description of this command.
 Provide plain text only, no Markdown formatting.
