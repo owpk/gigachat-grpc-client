@@ -103,6 +103,7 @@ public class ChatServiceImpl implements ChatService {
 
     protected void baseChatRequest(RolePromptAction rolePromptAction,
                                    List<Gigachatv1.Message> messages) {
+        log.info("Chat request: " + rolePromptAction.getRolePrompt());
         persistRequest(rolePromptAction.getRolePrompt(),
                 rolePromptAction.getMessageRole());
 

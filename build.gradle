@@ -34,6 +34,7 @@ dependencies {
     compileOnly("org.projectlombok:lombok")
     compileOnly "org.apache.tomcat:annotations-api:6.0.53"
     runtimeOnly("ch.qos.logback:logback-classic")
+    runtimeOnly("org.yaml:snakeyaml")
 
 //    implementation 'com.konghq:unirest-java:3.14.5'
     implementation("info.picocli:picocli")
