@@ -11,20 +11,17 @@ import picocli.CommandLine;
 @Slf4j
 public class ConfigCommand implements Runnable {
     private final MainSettingsStore mainSettingsStore;
+    @CommandLine.Option(names = {"-s", "--show"}, description = "Show this help message and exit.")
+    boolean showProperties;
+    @CommandLine.Option(names = {"-c", "--create"}, description = "Rewrite settings file with default config.")
+    boolean createConfig;
+    @CommandLine.Option(names = {"-d", "--credentials"}, description = "Set credentials property.")
+    String credentials;
 
     @Inject
     public ConfigCommand(MainSettingsStore mainSettingsStore) {
         this.mainSettingsStore = mainSettingsStore;
     }
-
-    @CommandLine.Option(names = {"-s", "--show"}, description = "Show this help message and exit.")
-    boolean showProperties;
-
-    @CommandLine.Option(names = {"-c", "--create"}, description = "Rewrite settings file with default config.")
-    boolean createConfig;
-
-    @CommandLine.Option(names = {"-d", "--credentials"}, description = "Set credentials property.")
-    String credentials;
 
     @Override
     public void run() {

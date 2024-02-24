@@ -1,6 +1,5 @@
 package owpk.storage.main;
 
-import com.sun.tools.javac.Main;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import owpk.Application;
@@ -27,6 +26,13 @@ public class MainSettingsStore implements FileSettingsStore<MainSettings> {
     public MainSettingsStore() {
         this.properties = new Properties();
         mainSettings = loadSettings();
+    }
+
+    public static Properties getDefaltProperties() {
+        log.info("Creating default application store properties...");
+        var props = new Properties();
+        props.putAll(MainSettingField.propertiesMap);
+        return props;
     }
 
     public void init() {
@@ -74,13 +80,6 @@ public class MainSettingsStore implements FileSettingsStore<MainSettings> {
 
     public String getProperty(String key) {
         return properties.getProperty(key);
-    }
-
-    public static Properties getDefaltProperties() {
-        log.info("Creating default application store properties...");
-        var props = new Properties();
-        props.putAll(MainSettingField.propertiesMap);
-        return props;
     }
 
     @Override

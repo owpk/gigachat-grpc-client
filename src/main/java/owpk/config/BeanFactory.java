@@ -9,7 +9,6 @@ import owpk.api.AuthRestClient;
 import owpk.api.AuthRestClientImpl;
 import owpk.grpc.GigaChatGRpcClient;
 import owpk.service.*;
-import owpk.storage.main.MainSettings;
 import owpk.storage.main.MainSettingsStore;
 import picocli.CommandLine;
 

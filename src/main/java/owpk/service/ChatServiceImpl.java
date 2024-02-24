@@ -20,11 +20,6 @@ public class ChatServiceImpl implements ChatService {
     protected final ChatHistoryService chatHistoryService;
     private ChatRequestHandler chatRequestHandler;
 
-    @FunctionalInterface
-    public interface ChatRequestHandler {
-        String handleChatRequest(Gigachatv1.ChatRequest request);
-    }
-
     public ChatServiceImpl(GigaChatGRpcClient gigaChatGRpcClient,
                            ChatHistoryService chatHistoryService,
                            MainSettingsStore mainSettingsStore) {
@@ -128,5 +123,10 @@ public class ChatServiceImpl implements ChatService {
     protected String defaultHandleResponse(Gigachatv1.ChatResponse chatResponse) {
         return chatResponse.getAlternativesList().stream().map(a -> a.getMessage().getContent())
                 .collect(Collectors.joining(" "));
+    }
+
+    @FunctionalInterface
+    public interface ChatRequestHandler {
+        String handleChatRequest(Gigachatv1.ChatRequest request);
     }
 }
