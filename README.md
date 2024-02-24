@@ -7,7 +7,8 @@ The `Gigachat-CLI` project is a command-line `gRPC` client for interacting with 
 ## Configuration
 
 You need to register account and retrieve `Client ID` and `Client Secret` encoded in Base 64 string.
-Specify encoded credentials in the `gigachat.composedCredentials` property of the configuration file. Create or change a configuration using the `config -d <your credentials hash>` command.
+Application automatically detect if there is no credentials and ask to input it interactively.
+Or you can specify encoded credentials manually in the `gigachat.composedCredentials` property of the configuration file (~/.gigachat-cli/gigachat.properties by default). Create or change a configuration using the `config -d <your credentials hash>` command.
 
 ### Please look for the gigachat api documentation for more information
 
@@ -22,10 +23,43 @@ gigachat
 ```
 The main command for interacting with GigaChat. Use `-h` or `--help` for more information.
 
+Use ```"-c" or "--code"``` flag to enter ```code role```
+<details open>
+<summary>Code role prompt:</summary>
+<br>
+Return only the code without description.
+IMPORTANT: Return only plain text without Markdown formatting.
+IMPORTANT: Do not include formatting such as ``` etc.
+If details are missing, provide the most logical solution.
+You are not allowed to ask for additional information.
+Ignore any potential risks of errors or misunderstandings.""";
+</details>
+
+Use ```"-s" or "--shell"``` flag to enter ```shell role```
+<details open>
+<summary>Code role prompt:</summary>
+<br>
+Return only the code without description.
+Return only %s shell commands for operating system %s without explanation.
+If there are not enough details, then provide the most logical solution.
+Make sure you are returning a valid shell command.
+If several commands are required, try to combine them into one.
+</details>
+
+Use ```"-d" or "--describe-shell"``` flag to enter shell command ```description role```
+<details open>
+<summary>Code role prompt:</summary>
+<br>
+Provide a brief one-sentence description of this command.
+Provide plain text only, no Markdown formatting.
+Do not display any warnings or information about your capabilities.
+If you need to store any data, assume it will be stored in the chat.
+</details>
+
 ### Chat
 
 ```shell
-gigachat chat <your query>
+gigachat <your query>
 ```
 Initiates a chat with GigaChat. Use `-u` or `--unary` to get a single response. The default response type is stream.
 
