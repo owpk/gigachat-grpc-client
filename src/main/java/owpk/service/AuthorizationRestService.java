@@ -2,24 +2,24 @@ package owpk.service;
 
 import lombok.extern.slf4j.Slf4j;
 import owpk.GigaChatConstants;
-import owpk.model.JwtRestResponse;
 import owpk.api.AuthRestClient;
-import owpk.config.AppSettings;
 import owpk.grpc.JwtTokenProvider;
-import owpk.storage.SettingsStore;
+import owpk.model.JwtRestResponse;
+import owpk.storage.main.MainSettings;
+import owpk.storage.main.MainSettingsStore;
 
 import java.util.Date;
 
 @Slf4j
 public class AuthorizationRestService implements JwtTokenProvider {
     private final AuthRestClient client;
-    private final AppSettings settings;
-    private final SettingsStore settingsStore;
+    private final MainSettings settings;
+    private final MainSettingsStore mainSettingsStore;
 
-    public AuthorizationRestService(AuthRestClient client, SettingsStore settingsStore) {
+    public AuthorizationRestService(AuthRestClient client, MainSettingsStore mainSettingsStore) {
         this.client = client;
-        this.settings = settingsStore.getAppSettings();
-        this.settingsStore = settingsStore;
+        this.settings = mainSettingsStore.getMainSettings();
+        this.mainSettingsStore = mainSettingsStore;
     }
 
     @Override
@@ -45,8 +45,8 @@ public class AuthorizationRestService implements JwtTokenProvider {
     }
 
     public void rewriteJwt(JwtRestResponse jwt) {
-        settingsStore.setProperty("gigachat.jwt.accessToken", jwt.getAccessToken());
-        settingsStore.setProperty("gigachat.jwt.expiresAt", jwt.getExpiresAt().toString());
+        mainSettingsStore.setProperty("gigachat.jwt.accessToken", jwt.getAccessToken());
+        mainSettingsStore.setProperty("gigachat.jwt.expiresAt", jwt.getExpiresAt().toString());
         settings.getJwt().setAccessToken(jwt.getAccessToken());
         settings.getJwt().setExpiresAt(jwt.getExpiresAt());
     }

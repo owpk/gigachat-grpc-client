@@ -6,9 +6,6 @@ import owpk.LoggingUtils;
 import owpk.service.ChatHistoryService;
 import picocli.CommandLine;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-
 @Slf4j
 @CommandLine.Command(name = "history", aliases = {"hs", "h"}, description = "Show chat history.",
         mixinStandardHelpOptions = true)
@@ -28,7 +25,7 @@ public class ChatHistoryCommand implements Runnable {
         log.info("Chat history: " + messages.size());
 
         messages.stream().map(it -> CommandLine.Help.Ansi.AUTO.string(String.format(
-                        "@|bold,fg(green) %s:|@%n %s%n", it.role(), it.content()))
+                "@|bold,fg(green) %s:|@%n %s%n", it.role(), it.content()))
         ).forEach(System.out::println);
     }
 }

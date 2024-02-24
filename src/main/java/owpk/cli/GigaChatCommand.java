@@ -16,16 +16,22 @@ import static owpk.Application.showApiDocsHelp;
 @CommandLine.Command(name = "gigachat", description = "GigaChat CLI. Use -h or --help for more information",
         mixinStandardHelpOptions = true, subcommands = {ConfigCommand.class, ModelCommand.class, ChatHistoryCommand.class})
 public class GigaChatCommand implements Runnable {
+    private final LoggingSystem loggingSystem;
+    private final RetryingChatWrapper retryingChatWrapper;
+    @CommandLine.Parameters(defaultValue = "", description = "User query")
+    String query;
+    // TODO add description
+    @CommandLine.Option(names = {"-c", "--code"}, description = "Set code mode. Return only code snippet.")
+    boolean codeMode;
+    // TODO add description
+    @CommandLine.Option(names = {"-s", "--shell"}, description = "Set shell mode. Return only shell command base on your os and shell names.")
+    boolean shellMode;
     private int cacheLines = 2;
 
-    private final LoggingSystem loggingSystem;
-
-    private final RetryingChatWrapper chatService;
-
     @Inject
-    public GigaChatCommand(LoggingSystem loggingSystem, RetryingChatWrapper chatService) {
+    public GigaChatCommand(LoggingSystem loggingSystem, RetryingChatWrapper retryingChatWrapper) {
         this.loggingSystem = loggingSystem;
-        this.chatService = chatService;
+        this.retryingChatWrapper = retryingChatWrapper;
     }
 
     @CommandLine.Option(names = {"-h", "--help"}, defaultValue = "false", description = "Display help information.")
@@ -40,14 +46,11 @@ public class GigaChatCommand implements Runnable {
         }
     }
 
-    @CommandLine.Parameters(defaultValue = "", description = "User query")
-    String query;
-
     @CommandLine.Option(names = {"-u", "--unary"},
             description = "Use unary response type. Default type is stream", defaultValue = "false")
     public void useUnary(boolean useUnary) {
-        if (useUnary) chatService.setUnaryMode();
-        else chatService.setStreamMode();
+        if (useUnary) retryingChatWrapper.setUnaryMode();
+        else retryingChatWrapper.setStreamMode();
     }
 
     @CommandLine.Option(names = "--log-level", description = "Set log level: ERROR | INFO | DEBUG",
@@ -55,14 +58,6 @@ public class GigaChatCommand implements Runnable {
     public void setLogLevel(String logLevel) {
         loggingSystem.setLogLevel(Logger.ROOT_LOGGER_NAME, LogLevel.valueOf(logLevel));
     }
-
-    // TODO add description
-    @CommandLine.Option(names = {"-c", "--code"}, description = "Set code mode. Return only code snippet.")
-    boolean codeMode;
-
-    // TODO add description
-    @CommandLine.Option(names = {"-s", "--shell"}, description = "Set shell mode. Return only shell command base on your os and shell names.")
-    boolean shellMode;
 
     @CommandLine.Option(names = {"--no-cache", "-n"}, description = "Disable chat history context")
     public void setCacheLines(boolean noCache) {
@@ -76,13 +71,13 @@ public class GigaChatCommand implements Runnable {
         if (!query.isBlank()) {
             if (codeMode) {
                 log.info("Running in code mode");
-                chatService.chat(UserRoles.of(UserRoles.CODE).apply(query));
+                retryingChatWrapper.chat(UserRoles.of(UserRoles.CODE).apply(query));
             } else if (shellMode) {
                 log.info("Running in shell mode");
-                chatService.chat(UserRoles.of(UserRoles.SHELL).apply(query));
+                retryingChatWrapper.chat(UserRoles.of(UserRoles.SHELL).apply(query));
             } else {
                 log.info("Running in chat mode");
-                chatService.chat(UserRoles.of(UserRoles.CHAT).apply(query), cacheLines);
+                retryingChatWrapper.chat(UserRoles.of(UserRoles.CHAT).apply(query), cacheLines);
             }
         }
     }

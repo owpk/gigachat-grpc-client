@@ -22,18 +22,13 @@ import java.util.function.Predicate;
 @Slf4j
 @Singleton
 public class ChatHistoryService {
-    private static final String ROLE_USER_PAT = formatRoll(GigaChatConstants.MessageRole.USER);
-    private static final String ROLE_CHAT_PAT = formatRoll(GigaChatConstants.MessageRole.ASSISTANT);
     private static final String ROLE_PREFIX = "[[_Role: ";
     private static final String ROLE_SUFFIX = " ]]";
-
+    private static final String ROLE_USER_PAT = formatRoll(GigaChatConstants.MessageRole.USER);
+    private static final String ROLE_CHAT_PAT = formatRoll(GigaChatConstants.MessageRole.ASSISTANT);
     // TODO exclude to some props
     private static final Path CHAT_FILE_PATH =
-            Paths.get(Application.appHome, "chat");
-
-    private static String formatRoll(String pattern) {
-        return ROLE_PREFIX + "{" + pattern + "}" + ROLE_SUFFIX;
-    }
+            Paths.get(Application.APP_HOME_DIR.toString(), "chat");
 
     public ChatHistoryService() {
         try {
@@ -41,6 +36,36 @@ public class ChatHistoryService {
                 Files.createFile(CHAT_FILE_PATH);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private static String formatRoll(String pattern) {
+        return ROLE_PREFIX + "{" + pattern + "}" + ROLE_SUFFIX;
+    }
+
+    private static ArrayList<String> getStrings(String user, ArrayList<String> linesList,
+                                                ArrayList<ChatMessage> messages) {
+        Collections.reverse(linesList);
+        var rpcMsg = new ChatMessage(user,
+                String.join("", linesList));
+        messages.add(rpcMsg);
+        linesList = new ArrayList<>();
+        return linesList;
+    }
+
+    private static void reverse(byte[] array) {
+        if (array == null) {
+            return;
+        }
+        int i = 0;
+        int j = array.length - 1;
+        byte tmp;
+        while (j > i) {
+            tmp = array[j];
+            array[j] = array[i];
+            array[i] = tmp;
+            j--;
+            i++;
         }
     }
 
@@ -107,33 +132,6 @@ public class ChatHistoryService {
     private String defineRole(String role) {
         return role.substring(role.indexOf("{") + 1, role.lastIndexOf("}")).trim();
     }
-
-    private static ArrayList<String> getStrings(String user, ArrayList<String> linesList,
-                                                ArrayList<ChatMessage> messages) {
-        Collections.reverse(linesList);
-        var rpcMsg = new ChatMessage(user,
-                String.join("", linesList));
-        messages.add(rpcMsg);
-        linesList = new ArrayList<>();
-        return linesList;
-    }
-
-    private static void reverse(byte[] array) {
-        if (array == null) {
-            return;
-        }
-        int i = 0;
-        int j = array.length - 1;
-        byte tmp;
-        while (j > i) {
-            tmp = array[j];
-            array[j] = array[i];
-            array[i] = tmp;
-            j--;
-            i++;
-        }
-    }
-
 
     public void persistContentToHistory(String content, String role) {
         var roleString = formatRoll(role);
