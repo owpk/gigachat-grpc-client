@@ -34,7 +34,6 @@ public class ChatCommand implements Runnable {
     @CommandLine.Parameters(description = "User query")
     String[] query;
 
-    // TODO add description
     @CommandLine.Option(names = {"-c", "--code"}, description = "Set code mode. Return only code snippet.")
     public void setCodeMode(boolean codeMode) {
         if (codeMode) {
@@ -42,7 +41,6 @@ public class ChatCommand implements Runnable {
         }
     }
 
-    // TODO add description
     @CommandLine.Option(names = {"-s", "--shell"}, description = "Set shell mode. Return only shell command base on your os and shell names.")
     public void setShellMode(boolean shellMode) {
         if (shellMode) {
