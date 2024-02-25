@@ -21,13 +21,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
+import static owpk.GigaChatConstants.MessageRole.ASSISTANT;
+import static owpk.GigaChatConstants.MessageRole.USER;
+
 @Slf4j
 @Singleton
 public class ChatHistoryService {
     private static final String ROLE_PREFIX = "[[_Role: ";
     private static final String ROLE_SUFFIX = " ]]";
-    private static final String ROLE_USER_PAT = formatRoll(GigaChatConstants.MessageRole.USER);
-    private static final String ROLE_CHAT_PAT = formatRoll(GigaChatConstants.MessageRole.ASSISTANT);
+    private static final String ROLE_USER_PAT = formatRoll(USER.getValue());
+    private static final String ROLE_CHAT_PAT = formatRoll(ASSISTANT.getValue());
     // TODO exclude to some props
     private static final String FILE_NAME = String.format("chat-%s.md",
             new SimpleDateFormat("yyyy-MM-dd").format(System.currentTimeMillis()));
@@ -100,10 +103,10 @@ public class ChatHistoryService {
                     var stringLine = new String(body);
 
                     if (stringLine.startsWith(ROLE_USER_PAT)) {
-                        linesList = getStrings(GigaChatConstants.MessageRole.USER,
+                        linesList = getStrings(USER.getValue(),
                                 linesList, messages);
                     } else if (stringLine.startsWith(ROLE_CHAT_PAT)) {
-                        linesList = getStrings(GigaChatConstants.MessageRole.ASSISTANT,
+                        linesList = getStrings(ASSISTANT.getValue(),
                                 linesList, messages);
                     } else if (stringLine.startsWith(ROLE_PREFIX)) {
                         if (all) linesList = getStrings(defineRole(stringLine), linesList, messages);
@@ -141,6 +144,14 @@ public class ChatHistoryService {
             System.arraycopy(roleBytes, 0, composedArray, 0, roleBytes.length);
             System.arraycopy(body, 0, composedArray, roleBytes.length, body.length);
             Files.write(CHAT_FILE_PATH, composedArray, StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void clearChatHistory() {
+        try {
+            Files.deleteIfExists(CHAT_FILE_PATH);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

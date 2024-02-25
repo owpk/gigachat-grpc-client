@@ -3,13 +3,13 @@ package owpk.service;
 import gigachat.v1.Gigachatv1;
 import lombok.extern.slf4j.Slf4j;
 import owpk.GigaChatConstants;
-import owpk.RolePromptAction;
 import owpk.grpc.GigaChatGRpcClient;
+import owpk.role.RolePrompt;
 import owpk.storage.main.MainSettings;
 import owpk.storage.main.MainSettingsStore;
 
 import java.io.StringWriter;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,19 +64,17 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public void chat(RolePromptAction promptRole) {
-        baseChatRequest(promptRole, Collections.emptyList());
+    public void chat(RolePrompt rolePrompt) {
+        baseChatRequest(rolePrompt);
     }
 
-    @Override
-    public void chat(RolePromptAction promptRole, int lastMessageCount) {
-        baseChatRequest(promptRole, readLastMessages(lastMessageCount));
-    }
-
-    protected Gigachatv1.ChatRequest.Builder createdRequestBuilder(List<Gigachatv1.Message> additionalMessages) {
+    protected Gigachatv1.ChatRequest createdRequest(Gigachatv1.Message userRequestMsg,
+                                                    List<Gigachatv1.Message> additionalMessages) {
         return Gigachatv1.ChatRequest.newBuilder()
                 .setModel(mainSettings.getModel())
-                .addAllMessages(additionalMessages);
+                .addAllMessages(additionalMessages)
+                .addMessages(userRequestMsg)
+                .build();
     }
 
     protected Gigachatv1.Message buildMessage(String content, String role) {
@@ -88,35 +86,40 @@ public class ChatServiceImpl implements ChatService {
 
     protected void persistResponse(String content) {
         chatHistoryService.persistContentToHistory(content,
-                GigaChatConstants.MessageRole.ASSISTANT);
+                GigaChatConstants.MessageRole.ASSISTANT.getValue());
     }
 
-    protected void persistRequest(String content, String roleName) {
-        chatHistoryService.persistContentToHistory(content, roleName);
+    protected void persistRequest(String content) {
+        chatHistoryService.persistContentToHistory(content,
+                GigaChatConstants.MessageRole.USER.getValue());
     }
 
     protected List<Gigachatv1.Message> readLastMessages(int messageCount) {
+        if (messageCount == 0)
+            return new ArrayList<>();
         return chatHistoryService.readLastMessages(messageCount, true, false)
                 .stream().map(it -> buildMessage(it.content(), it.role()))
                 .collect(Collectors.toList());
     }
 
-    protected void baseChatRequest(RolePromptAction rolePromptAction,
-                                   List<Gigachatv1.Message> messages) {
-        log.info("Chat request: " + rolePromptAction.getRolePrompt());
-        persistRequest(rolePromptAction.getRolePrompt(),
-                rolePromptAction.getMessageRole());
+    protected void baseChatRequest(RolePrompt rolePrompt) {
+        log.info("Chat request: " + rolePrompt);
+        persistRequest(rolePrompt.getUserQuery());
 
-        var request = createdRequestBuilder(messages);
-        request.addMessages(buildMessage(rolePromptAction.getRolePrompt(),
-                rolePromptAction.getMessageRole()));
+        var userRequestMsg = buildMessage(rolePrompt.getRolePrompt(),
+                GigaChatConstants.MessageRole.USER.getValue());
+        var lastMessages = readLastMessages(rolePrompt.getChatHistoryContextSize());
+        var request = createdRequest(userRequestMsg, lastMessages);
 
         log.info("""
                 Building grpc request:
                     Messages count: {}
-                """, request.getMessagesCount());
+                    Messages roles: {}
+                """, request.getMessagesCount(), request.getMessagesList().stream()
+                .map(Gigachatv1.Message::getRole)
+                .collect(Collectors.joining(" ")));
 
-        var result = chatRequestHandler.handleChatRequest(request.build());
+        var result = chatRequestHandler.handleChatRequest(request);
         persistResponse(result);
     }
 

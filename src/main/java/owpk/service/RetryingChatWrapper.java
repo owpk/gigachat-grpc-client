@@ -3,7 +3,7 @@ package owpk.service;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import lombok.extern.slf4j.Slf4j;
-import owpk.RolePromptAction;
+import owpk.role.RolePrompt;
 import owpk.storage.main.MainSettingField;
 import owpk.storage.main.MainSettingsStore;
 
@@ -31,13 +31,8 @@ public class RetryingChatWrapper implements ChatService {
     }
 
     @Override
-    public void chat(RolePromptAction rolePromptAction, int lastMessageCount) {
-        catchUnauthorized(() -> delegate.chat(rolePromptAction, lastMessageCount));
-    }
-
-    @Override
-    public void chat(RolePromptAction rolePromptAction) {
-        catchUnauthorized(() -> delegate.chat(rolePromptAction));
+    public void chat(RolePrompt rolePrompt) {
+        catchUnauthorized(() -> delegate.chat(rolePrompt));
     }
 
     private void catchUnauthorized(Runnable callable) {

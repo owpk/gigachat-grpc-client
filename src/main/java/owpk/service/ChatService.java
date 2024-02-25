@@ -1,11 +1,10 @@
 package owpk.service;
 
-import owpk.RolePromptAction;
+import owpk.role.RolePrompt;
 
 public interface ChatService {
-    void chat(RolePromptAction promptRole, int lastMessageCount);
 
-    void chat(RolePromptAction promptRole);
+    void chat(RolePrompt rolePrompt);
 
     void setUnaryMode();
 

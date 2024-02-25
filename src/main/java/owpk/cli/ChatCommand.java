@@ -5,13 +5,14 @@ import io.micronaut.logging.LoggingSystem;
 import jakarta.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
-import owpk.ChatRoles;
-import owpk.utils.LoggingUtils;
-import owpk.RolePromptAction;
+import owpk.role.*;
 import owpk.service.RetryingChatWrapper;
+import owpk.utils.LoggingUtils;
 import picocli.CommandLine;
 
-import java.util.function.Function;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.function.Supplier;
 
 import static owpk.Application.showApiDocsHelp;
 
@@ -21,40 +22,39 @@ import static owpk.Application.showApiDocsHelp;
 public class ChatCommand implements Runnable {
     private final LoggingSystem loggingSystem;
     private final RetryingChatWrapper retryingChatWrapper;
-    private Function<String, RolePromptAction> chatRoleClosure = ChatRoles.of(ChatRoles.CHAT);
-    private int cacheLines = 20;
+    private Supplier<RolePrompt> roleSupplier =
+            () -> new DefaultChatRolePrompt(collapseInput(), 6);
 
-    @CommandLine.Parameters(defaultValue = "", description = "User query")
-    String query;
+    @Inject
+    public ChatCommand(LoggingSystem loggingSystem, RetryingChatWrapper retryingChatWrapper) {
+        this.loggingSystem = loggingSystem;
+        this.retryingChatWrapper = retryingChatWrapper;
+    }
+
+    @CommandLine.Parameters(description = "User query")
+    String[] query;
 
     // TODO add description
     @CommandLine.Option(names = {"-c", "--code"}, description = "Set code mode. Return only code snippet.")
     public void setCodeMode(boolean codeMode) {
-        if (codeMode)
-            chatRoleClosure = ChatRoles.of(ChatRoles.CODE);
+        if (codeMode) {
+            roleSupplier = () -> new CodeRolePrompt(collapseInput());
+        }
     }
 
     // TODO add description
     @CommandLine.Option(names = {"-s", "--shell"}, description = "Set shell mode. Return only shell command base on your os and shell names.")
     public void setShellMode(boolean shellMode) {
         if (shellMode) {
-            setNoContext(true);
-            chatRoleClosure = ChatRoles.of(ChatRoles.SHELL);
+            roleSupplier = () -> new ShellRolePrompt(collapseInput());
         }
     }
 
     @CommandLine.Option(names = {"-d", "--describe-shell"}, description = "Set shell mode. Describes shell command.")
     public void setDescribeShellCommand(boolean describeShellCommand) {
         if (describeShellCommand) {
-            setNoContext(true);
-            chatRoleClosure = ChatRoles.of(ChatRoles.DESCRIBE_SHELL);
+            roleSupplier = () -> new DescribeRolePrompt(collapseInput());
         }
-    }
-
-    @Inject
-    public ChatCommand(LoggingSystem loggingSystem, RetryingChatWrapper retryingChatWrapper) {
-        this.loggingSystem = loggingSystem;
-        this.retryingChatWrapper = retryingChatWrapper;
     }
 
     @CommandLine.Option(names = {"-h", "--help"}, defaultValue = "false", description = "Display help information.")
@@ -82,18 +82,27 @@ public class ChatCommand implements Runnable {
         loggingSystem.setLogLevel(Logger.ROOT_LOGGER_NAME, LogLevel.valueOf(logLevel));
     }
 
-    @CommandLine.Option(names = {"--no-context", "-n"}, description = "Disable chat history context")
-    public void setNoContext(boolean noCache) {
-        if (noCache)
-            cacheLines = 0;
+    private String collapseInput() {
+        if (query != null && query.length > 0)
+            return String.join(" ", query);
+        return "";
     }
 
     @Override
     public void run() {
+        var pipedInput = new StringBuilder();
+        try (var in = new BufferedReader(new InputStreamReader(System.in))) {
+            String line;
+            while (in.ready() && (line = in.readLine()) != null) {
+                pipedInput.append(line).append("\n");
+            }
+        } catch (Exception e) {
+            log.info("Error while reading piped input: " + e);
+        }
+
+        var role = roleSupplier.get();
+        role.setUserQuery(role.getUserQuery() + " " + pipedInput);
         LoggingUtils.cliCommandLog(this.getClass(), log);
-        if (!query.isBlank()) {
-            retryingChatWrapper.chat(chatRoleClosure.apply(query), cacheLines);
-        } else
-            CommandLine.usage(this, System.out);
+        retryingChatWrapper.chat(role);
     }
 }

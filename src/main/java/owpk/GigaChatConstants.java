@@ -1,6 +1,12 @@
 package owpk;
 
 import io.grpc.Metadata;
+import lombok.Getter;
+
+import java.util.Arrays;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
 
@@ -12,22 +18,25 @@ public final class GigaChatConstants {
         public static final String PERSONAL = "GIGACHAT_API_PERS";
     }
 
-    public static class MessageRole {
-
+    @Getter
+    public enum MessageRole {
+        USER("user"),
+        SYSTEM("system"),
+        ASSISTANT("assistant"),
+        SEARCH_RESULT("search_result");
         // сообщение пользователя;
-        public static final String USER = "user";
 
-        // системный промпт, который задает роль модели, например,
-        // должна модель отвечать как академик или как школьник;
-        public static final String SYSTEM = "system";
+        private final String value;
 
-        // ответ модели;
-        public static final String ASSISTANT = "assistant";
+        MessageRole(String value) {
+            this.value = value;
+        }
 
-        // позволяет передать модели документ,
-        // который она должна использовать для генерации ответов.
-        // Используется для поддержки RAG.
-        public static final String SEARCH_RESULT = "search_result";
+        public static final Map<String, MessageRole> messageRoleMap = Arrays.stream(MessageRole.values())
+                .collect(Collectors.toMap(it -> it.value, Function.identity()));
 
+        public static MessageRole of(String value) {
+            return messageRoleMap.get(value);
+        }
     }
 }
