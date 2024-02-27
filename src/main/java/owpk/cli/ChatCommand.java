@@ -88,6 +88,13 @@ public class ChatCommand implements Runnable {
 
     @Override
     public void run() {
+
+        var role = roleSupplier.get();
+        var query = role.getUserQuery();
+
+        if (query == null || query.isBlank())
+            return;
+
         var pipedInput = new StringBuilder();
         try (var in = new BufferedReader(new InputStreamReader(System.in))) {
             String line;
@@ -97,9 +104,10 @@ public class ChatCommand implements Runnable {
         } catch (Exception e) {
             log.info("Error while reading piped input: " + e);
         }
+        
+        role.setUserQuery(role.getUserQuery() + 
+            (pipedInput.isEmpty() ? "" : " " + pipedInput));
 
-        var role = roleSupplier.get();
-        role.setUserQuery(role.getUserQuery() + " " + pipedInput);
         LoggingUtils.cliCommandLog(this.getClass(), log);
         retryingChatWrapper.chat(role);
     }
