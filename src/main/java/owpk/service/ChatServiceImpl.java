@@ -50,6 +50,7 @@ public class ChatServiceImpl implements ChatService {
                 sw.append(content);
                 System.out.print(content);
             }
+            System.out.println();
             return sw.toString();
         };
     }
