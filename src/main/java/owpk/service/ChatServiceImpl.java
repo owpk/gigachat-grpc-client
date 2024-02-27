@@ -104,11 +104,12 @@ public class ChatServiceImpl implements ChatService {
 
     protected void baseChatRequest(RolePrompt rolePrompt) {
         log.info("Chat request: " + rolePrompt);
+
+        var lastMessages = readLastMessages(rolePrompt.getChatHistoryContextSize());
         persistRequest(rolePrompt.getUserQuery());
 
         var userRequestMsg = buildMessage(rolePrompt.getRolePrompt(),
                 GigaChatConstants.MessageRole.USER.getValue());
-        var lastMessages = readLastMessages(rolePrompt.getChatHistoryContextSize());
         var request = createdRequest(userRequestMsg, lastMessages);
 
         log.info("""
@@ -116,7 +117,8 @@ public class ChatServiceImpl implements ChatService {
                     Messages count: {}
                     Messages roles: {}
                 """, request.getMessagesCount(), request.getMessagesList().stream()
-                .map(Gigachatv1.Message::getRole)
+                .map(it -> it.getRole() + " : " + it.getContent().substring(0, it.getContent().length() -
+                        (it.getContent().length() / 2)) + "...\n")
                 .collect(Collectors.joining(" ")));
 
         var result = chatRequestHandler.handleChatRequest(request);
