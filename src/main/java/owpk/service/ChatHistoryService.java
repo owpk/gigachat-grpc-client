@@ -27,7 +27,7 @@ import static owpk.GigaChatConstants.MessageRole.USER;
 @Slf4j
 @Singleton
 public class ChatHistoryService {
-    private static final String ROLE_PREFIX = "[[_Role: ";
+    private static final String ROLE_PREFIX = "## [[_Role: ";
     private static final String ROLE_SUFFIX = " ]]";
     private static final String ROLE_USER_PAT = formatRoll(USER.getValue());
     private static final String ROLE_CHAT_PAT = formatRoll(ASSISTANT.getValue());
