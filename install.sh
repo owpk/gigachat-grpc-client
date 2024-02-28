@@ -6,7 +6,7 @@ LAST_VER=$( gigachat -v 2> /dev/null )
 
 function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
 
-if [[ -z "$LAST_VER" || $(version $VERSION -ge version $LAST_VER) ]]; then
+if [[ -z "$LAST_VER" || $(version $VERSION) -gt $(version $LAST_VER) ]]; then
     rm $TARGET 2> /dev/null
     echo "------"
     echo "Found newest version!: $VERSION"
@@ -28,4 +28,4 @@ if [[ -z "$LAST_VER" || $(version $VERSION -ge version $LAST_VER) ]]; then
     exit 0
 fi
 
-echo "Installed newest version: $LAST_VER. Exiting."
+echo "The latest version is already installed: $LAST_VER. Exiting."
