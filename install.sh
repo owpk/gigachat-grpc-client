@@ -1,5 +1,7 @@
 #!/bin/bash 
 
+git pull
+
 TARGET=~/.local/bin/gigachat
 
 VERSION=$( curl -I https://github.com/owpk/gigachat-grpc-client/releases/latest | awk -F '/' '/^location/ {print  substr($NF, 1, length($NF)-1)}' )
