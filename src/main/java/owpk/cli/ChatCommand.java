@@ -17,7 +17,7 @@ import java.util.function.Supplier;
 import static owpk.Application.showApiDocsHelp;
 
 @Slf4j
-@CommandLine.Command(name = "gigachat", description = "GigaChat CLI. Use -h or --help for more information",
+@CommandLine.Command(versionProvider = VersionProvider.class, name = "gigachat", description = "GigaChat CLI. Use -h or --help for more information",
         mixinStandardHelpOptions = true, subcommands = {ConfigCommand.class, ModelCommand.class, HistoryCommand.class})
 public class ChatCommand implements Runnable {
     private final LoggingSystem loggingSystem;
@@ -31,6 +31,8 @@ public class ChatCommand implements Runnable {
         this.retryingChatWrapper = retryingChatWrapper;
     }
 
+    @CommandLine.Option(names = {"-v", "--version"}, versionHelp = true, description = "Print version info.")
+    boolean versionRequested;
     @CommandLine.Parameters(description = "User query")
     String[] query;
 

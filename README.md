@@ -3,6 +3,9 @@ The `Gigachat-CLI` project is a command-line `gRPC` client for interacting with 
 ## Installing
 - To use `GigaChat CLI`, download the [latest version](https://github.com/owpk/gigachat-grpc-client/releases/latest)  
 - For manual installation, see section ["Build"](#build2)
+- Also `install.sh` script available. Just run it from project root `./install.sh`.   
+> The script will download latest release and install it to your `~/.local/bin/` directory .  
+> Also you can use it to update existing binary. The script checks if current version is old and automatically install newest release
 
 ## Configuration
 > [!IMPORTANT]

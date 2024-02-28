@@ -1,5 +1,6 @@
 plugins {
     id "com.github.johnrengelman.shadow" version "8.1.1"
+    id "com.palantir.git-version" version "3.0.0"
     id "io.micronaut.application" version "4.3.2"
     id "io.micronaut.aot" version "4.3.2"
     id "com.google.protobuf" version "0.9.4"
@@ -11,14 +12,16 @@ application {
     mainClass = "owpk.Application"
 }
 
-version = "0.1"
+def gitDetails = versionDetails()
+version = gitDetails.lastTag
+
 group = "owpk"
 
 repositories {
     mavenCentral()
 }
 
-compileJava {options.encoding = "UTF-8"}
+compileJava { options.encoding = "UTF-8" }
 
 def grpcVersion = '1.61.0'
 def protobufVersion = '3.25.1'
@@ -104,3 +107,11 @@ protobuf {
         all()*.plugins { grpc {} }
     }
 }
+
+tasks.register("writeVersion") {
+    print(project.version)
+    file("src/main/resources/version").text =
+            "version=${gitDetails.lastTag}\nbuild=${gitDetails.gitHash}"
+}
+
+build.dependsOn writeVersion
