@@ -1,6 +1,9 @@
 #!/bin/bash 
 
-TARGET=~/.local/bin/gigachat
+TARGET=$HOME/.local/bin/gigachat
+
+mkdir -p $HOME/.local/bin
+
 VERSION=$( curl -I https://github.com/owpk/gigachat-grpc-client/releases/latest | awk -F '/' '/^location/ {print  substr($NF, 1, length($NF)-1)}' )
 LAST_VER=$( gigachat -v 2> /dev/null )
 

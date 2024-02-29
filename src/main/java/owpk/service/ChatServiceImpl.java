@@ -9,6 +9,7 @@ import owpk.storage.main.MainSettings;
 import owpk.storage.main.MainSettingsStore;
 
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -128,6 +129,7 @@ public class ChatServiceImpl implements ChatService {
 
     // TODO handle response alternatives (what is it at all???)
     protected String defaultHandleResponse(Gigachatv1.ChatResponse chatResponse) {
+        log.info("Alternatives: {}", chatResponse.getAlternativesCount());
         return chatResponse.getAlternativesList().stream().map(a -> a.getMessage().getContent())
                 .collect(Collectors.joining(" "));
     }
