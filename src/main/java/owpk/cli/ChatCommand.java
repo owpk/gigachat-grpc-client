@@ -67,7 +67,7 @@ public class ChatCommand implements Runnable {
         }
     }
 
-    @CommandLine.Option(names = {"--role", "--custom-role"}, description = "Apply user defined role as system prompt.")
+    @CommandLine.Option(names = {"-r", "--custom-role"}, description = "Apply user defined role as system prompt.")
     public void customRole(String roleName) {
         if (roleName != null && !roleName.isBlank()) {
             try {
