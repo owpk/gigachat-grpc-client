@@ -109,7 +109,6 @@ protobuf {
 }
 
 tasks.register("writeVersion") {
-    print(project.version)
     file("src/main/resources/version").text =
             "version=${gitDetails.lastTag}\nbuild=${gitDetails.gitHash}"
 }

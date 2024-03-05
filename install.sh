@@ -4,8 +4,13 @@ TARGET=$HOME/.local/bin/gigachat
 
 mkdir -p $HOME/.local/bin
 
-VERSION=$( curl -I https://github.com/owpk/gigachat-grpc-client/releases/latest | awk -F '/' '/^location/ {print  substr($NF, 1, length($NF)-1)}' )
 LAST_VER=$( gigachat -v 2> /dev/null )
+
+if [ $1 == "-b" ]; then
+    VERSION=$( ./gradlew -q printVersion )
+else 
+    VERSION=$( curl -I https://github.com/owpk/gigachat-grpc-client/releases/latest | awk -F '/' '/^location/ {print  substr($NF, 1, length($NF)-1)}' )
+fi
 
 function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
 
