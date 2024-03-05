@@ -50,8 +50,8 @@ public class RolesStorage extends AbsPropertiesFileStorage<Map<String, Role>> {
     }
 
     @Override
-    protected Path initSettingsFile() {
-        return defaultInit(FILE_NAME);
+    protected void initSettingsFile() {
+        defaultInit(FILE_NAME);
     }
 
     @Override
@@ -74,18 +74,17 @@ public class RolesStorage extends AbsPropertiesFileStorage<Map<String, Role>> {
         }
     }
 
+    @Override
+    public void validate(Runnable missingBasicCredentialsPrinter) {
+       //TODO
+    }
+
     private List<Role> initDefaultRoles() {
         return List.of(
                 new Role(ShellRolePrompt.NAME, ShellRolePrompt.SHELL_ROLE, "", "Shell command"),
                 new Role(CodeRolePrompt.NAME, CodeRolePrompt.CODE_ROLE, "", "Code snippet"),
                 new Role(DescribeRolePrompt.NAME, DescribeRolePrompt.DESCRIBE_SHELL_ROLE, "", "Command description")
                 );
-    }
-
-    private Map<String, Map<String, String>> basicMap(List<Map<String, String>> roles) {
-        return roles.stream().collect(
-                Collectors.toMap(it -> it.get("name"),
-                        Function.identity()));
     }
 
     private Map<String, String> toMap(Role role) {

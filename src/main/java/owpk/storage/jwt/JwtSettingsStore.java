@@ -15,8 +15,7 @@ public class JwtSettingsStore extends AbsPropertiesFileStorage<MainSettings.Jwt>
     }
 
     @Override
-    protected Path initSettingsFile() {
-        return null;
+    protected void initSettingsFile() {
     }
 
     @Override
@@ -26,5 +25,10 @@ public class JwtSettingsStore extends AbsPropertiesFileStorage<MainSettings.Jwt>
 
     @Override
     public void createDefaults() {
+    }
+
+    @Override
+    public void validate(Runnable missingBasicCredentialsPrinter) {
+
     }
 }

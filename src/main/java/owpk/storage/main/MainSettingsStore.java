@@ -19,6 +19,7 @@ public class MainSettingsStore extends AbsPropertiesFileStorage<MainSettings> {
         return props;
     }
 
+    @Override
     public void validate(Runnable missingBasicCredentialsPrinter) {
         log.info("Validating application settings store properties...");
         load();
@@ -78,7 +79,7 @@ public class MainSettingsStore extends AbsPropertiesFileStorage<MainSettings> {
     }
 
     @Override
-    protected Path initSettingsFile() {
-        return Application.SETTINGS_FILE;
+    protected void initSettingsFile() {
+        this.settingsFile = Application.SETTINGS_FILE;
     }
 }

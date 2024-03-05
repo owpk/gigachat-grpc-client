@@ -39,7 +39,9 @@ public class BeanFactory {
 
     @Singleton
     public RolesStorage rolesStorage() {
-        return new RolesStorage();
+        var rolesStore = new RolesStorage();
+        rolesStore.validate(() -> {});
+        return rolesStore;
     }
 
     @Singleton

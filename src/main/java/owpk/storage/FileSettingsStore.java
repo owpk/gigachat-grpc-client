@@ -23,4 +23,6 @@ public interface FileSettingsStore<T> {
     void createDefaults();
 
     Properties getProperties();
+
+    void validate(Runnable missingBasicCredentialsPrinter);
 }

@@ -17,9 +17,9 @@ public abstract class AbsPropertiesFileStorage<T> implements FileSettingsStore<T
     protected Properties properties;
     protected T settings;
 
-    public AbsPropertiesFileStorage() {
+    protected AbsPropertiesFileStorage() {
         properties = new Properties();
-        settingsFile = initSettingsFile();
+        initSettingsFile();
 
         load();
         settings = initSettings();
@@ -28,7 +28,7 @@ public abstract class AbsPropertiesFileStorage<T> implements FileSettingsStore<T
 
     protected abstract T initSettings();
 
-    protected abstract Path initSettingsFile();
+    protected abstract void initSettingsFile();
 
     protected void load() {
         if (Files.exists(settingsFile)) {
@@ -55,19 +55,13 @@ public abstract class AbsPropertiesFileStorage<T> implements FileSettingsStore<T
         return properties;
     }
 
-    protected Path defaultInit(Path target) {
-        if (FileUtils.createFileWithDirs(target))
-            throw new RuntimeException("Can't create file: " + target);
-        return target;
-    }
-
-    protected Path defaultInit(String fromAppHome) {
+    protected void defaultInit(String fromAppHome) {
         var target = Paths.get(Application.APP_HOME_DIR.toString(), fromAppHome);
+        this.settingsFile = target;
+
         if (FileUtils.createFileWithDirs(target)) {
-            this.settingsFile = target;
             createDefaults();
         }
-        return target;
     }
 
     protected void storeProps() {
