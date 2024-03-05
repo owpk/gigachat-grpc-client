@@ -67,6 +67,18 @@ public class ChatCommand implements Runnable {
         }
     }
 
+    @CommandLine.Option(names = {"--role", "--custom-role"}, description = "Apply user defined role as system prompt.")
+    public void customRole(String roleName) {
+        if (roleName != null && !roleName.isBlank()) {
+            try {
+                roleSupplier = () -> SystemRolePrompt.create(collapseInput(),
+                        rolesStorage.getRole(DescribeRolePrompt.NAME));
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getLocalizedMessage());
+            }
+        }
+    }
+
     @CommandLine.Option(names = {"-h", "--help"}, defaultValue = "false", description = "Display help information.")
     public void setShowHelp(boolean showHelp) {
         if (showHelp) {
