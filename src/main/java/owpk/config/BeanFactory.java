@@ -10,6 +10,7 @@ import owpk.api.AuthRestClientImpl;
 import owpk.grpc.GigaChatGRpcClient;
 import owpk.service.*;
 import owpk.storage.main.MainSettingsStore;
+import owpk.storage.roles.RolesStorage;
 import picocli.CommandLine;
 
 import javax.net.ssl.SSLContext;
@@ -27,7 +28,6 @@ public class BeanFactory {
     @Order(value = Integer.MAX_VALUE)
     public MainSettingsStore settingsStore() {
         var settings = new MainSettingsStore();
-        settings.init();
         settings.validate(() -> {
             System.out.println(CommandLine.Help.Ansi.AUTO.string(
                     "@|bold,fg(yellow) Specify your credentials!|@"));
@@ -35,6 +35,11 @@ public class BeanFactory {
             System.out.print("Input 'Basic' auth: ");
         });
         return settings;
+    }
+
+    @Singleton
+    public RolesStorage rolesStorage() {
+        return new RolesStorage();
     }
 
     @Singleton
@@ -85,7 +90,7 @@ public class BeanFactory {
 
     @Singleton
     public GigaChatGRpcClient gRpcClient(AuthorizationRestService authorizationRestService, MainSettingsStore settings) throws SSLException {
-        return new GigaChatGRpcClient(settings.getMainSettings().getTarget(), authorizationRestService);
+        return new GigaChatGRpcClient(settings.getSettings().getTarget(), authorizationRestService);
     }
 
     @Singleton

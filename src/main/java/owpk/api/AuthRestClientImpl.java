@@ -22,7 +22,7 @@ public class AuthRestClientImpl implements AuthRestClient {
     private final ObjectMapper mapper = new ObjectMapper();
 
     public AuthRestClientImpl(MainSettingsStore settings, OkHttpClient okHttp) {
-        this.settings = settings.getMainSettings();
+        this.settings = settings.getSettings();
         this.okHttp = okHttp;
         init();
     }

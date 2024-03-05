@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import owpk.cli.ChatCommand;
 import owpk.storage.FileSettingsStore;
 import owpk.storage.main.MainSettingsStore;
+import owpk.storage.roles.RolesStorage;
 import owpk.utils.FileUtils;
 
 import java.io.IOException;

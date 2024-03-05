@@ -1,11 +1,10 @@
 package owpk.storage.main;
 
 import lombok.Getter;
+import owpk.utils.PropertiesEnumMapper;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Getter
@@ -17,10 +16,13 @@ public enum MainSettingField {
     JWT_EXPIRES_AT("gigachat.jwt.expiresAt", "0"),
     AUTH_URI("gigachat.authUri", "https://ngw.devices.sberbank.ru:9443/api/v2/oauth");
 
-    public static final Map<String, MainSettingField> valuesMap = Arrays.stream(MainSettingField.values())
-            .collect(Collectors.toMap(MainSettingField::name, Function.identity()));
-    public static final Map<String, String> propertiesMap = valuesMap.values().stream()
-            .collect(Collectors.toMap(it -> it.propertyKey, it -> it.value));
+    public static final Map<String, MainSettingField> valuesMap =
+            PropertiesEnumMapper.valuesMap(MainSettingField.values());
+
+    public static final Map<String, String> propertiesMap =
+            valuesMap.values().stream()
+            .collect(Collectors.toMap(MainSettingField::getPropertyKey, MainSettingField::getValue));
+
     private final String propertyKey;
     private final String value;
 

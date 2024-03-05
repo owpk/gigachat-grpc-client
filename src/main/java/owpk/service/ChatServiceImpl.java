@@ -26,7 +26,7 @@ public class ChatServiceImpl implements ChatService {
                            MainSettingsStore mainSettingsStore) {
         this.gigaChatGRpcClient = gigaChatGRpcClient;
         this.chatHistoryService = chatHistoryService;
-        this.mainSettings = mainSettingsStore.getMainSettings();
+        this.mainSettings = mainSettingsStore.getSettings();
         this.chatRequestHandler = streamMode();
     }
 

@@ -14,15 +14,13 @@ public interface FileSettingsStore<T> {
         }
     }
 
-    void init();
-
     Path getSettingsFile();
-
-    T loadSettings();
 
     T getSettings();
 
     Properties storeSettings(T settings);
 
-    Properties createDefaults();
+    void createDefaults();
+
+    Properties getProperties();
 }

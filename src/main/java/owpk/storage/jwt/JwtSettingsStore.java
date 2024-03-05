@@ -1,5 +1,6 @@
 package owpk.storage.jwt;
 
+import owpk.storage.AbsPropertiesFileStorage;
 import owpk.storage.FileSettingsStore;
 import owpk.storage.main.MainSettings;
 
@@ -7,24 +8,14 @@ import java.nio.file.Path;
 import java.util.Properties;
 
 // TODO separate jwt settings from main file
-public class JwtSettingsStore implements FileSettingsStore<MainSettings.Jwt> {
+public class JwtSettingsStore extends AbsPropertiesFileStorage<MainSettings.Jwt> {
     @Override
-    public void init() {
-
-    }
-
-    @Override
-    public Path getSettingsFile() {
+    protected MainSettings.Jwt initSettings() {
         return null;
     }
 
     @Override
-    public MainSettings.Jwt loadSettings() {
-        return null;
-    }
-
-    @Override
-    public MainSettings.Jwt getSettings() {
+    protected Path initSettingsFile() {
         return null;
     }
 
@@ -34,8 +25,6 @@ public class JwtSettingsStore implements FileSettingsStore<MainSettings.Jwt> {
     }
 
     @Override
-    public Properties createDefaults() {
-        return null;
+    public void createDefaults() {
     }
-
 }

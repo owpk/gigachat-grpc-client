@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import owpk.role.*;
 import owpk.service.RetryingChatWrapper;
+import owpk.storage.roles.RolesStorage;
 import owpk.utils.LoggingUtils;
 import picocli.CommandLine;
 
@@ -17,18 +18,24 @@ import java.util.function.Supplier;
 import static owpk.Application.showApiDocsHelp;
 
 @Slf4j
-@CommandLine.Command(versionProvider = VersionProvider.class, name = "gigachat", description = "GigaChat CLI. Use -h or --help for more information",
+@CommandLine.Command(versionProvider = VersionProvider.class, name = "gigachat",
+        description = "GigaChat CLI. Use -h or --help for more information",
         mixinStandardHelpOptions = true, subcommands = {ConfigCommand.class, ModelCommand.class, HistoryCommand.class})
 public class ChatCommand implements Runnable {
     private final LoggingSystem loggingSystem;
     private final RetryingChatWrapper retryingChatWrapper;
+    private final RolesStorage rolesStorage;
+
     private Supplier<RolePrompt> roleSupplier =
             () -> new DefaultChatRolePrompt(collapseInput(), 6);
 
     @Inject
-    public ChatCommand(LoggingSystem loggingSystem, RetryingChatWrapper retryingChatWrapper) {
+    public ChatCommand(LoggingSystem loggingSystem,
+                       RetryingChatWrapper retryingChatWrapper,
+                       RolesStorage rolesStorage) {
         this.loggingSystem = loggingSystem;
         this.retryingChatWrapper = retryingChatWrapper;
+        this.rolesStorage = rolesStorage;
     }
 
     @CommandLine.Option(names = {"-v", "--version"}, versionHelp = true, description = "Print version info.")
@@ -39,21 +46,24 @@ public class ChatCommand implements Runnable {
     @CommandLine.Option(names = {"-c", "--code"}, description = "Set code mode. Return only code snippet.")
     public void setCodeMode(boolean codeMode) {
         if (codeMode) {
-            roleSupplier = () -> new CodeRolePrompt(collapseInput());
+            roleSupplier = () -> SystemRolePrompt.create(collapseInput(),
+                    rolesStorage.getRole(CodeRolePrompt.NAME));
         }
     }
 
     @CommandLine.Option(names = {"-s", "--shell"}, description = "Set shell mode. Return only shell command base on your os and shell names.")
     public void setShellMode(boolean shellMode) {
         if (shellMode) {
-            roleSupplier = () -> new ShellRolePrompt(collapseInput());
+            roleSupplier = () -> SystemRolePrompt.create(collapseInput(),
+                    rolesStorage.getRole(ShellRolePrompt.NAME));
         }
     }
 
     @CommandLine.Option(names = {"-d", "--describe-shell"}, description = "Set shell mode. Describes shell command.")
     public void setDescribeShellCommand(boolean describeShellCommand) {
         if (describeShellCommand) {
-            roleSupplier = () -> new DescribeRolePrompt(collapseInput());
+            roleSupplier = () -> SystemRolePrompt.create(collapseInput(),
+                    rolesStorage.getRole(DescribeRolePrompt.NAME));
         }
     }
 
