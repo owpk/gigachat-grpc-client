@@ -1,6 +1,6 @@
 package owpk.grpc;
 
-import owpk.JwtRestResponse;
+import owpk.model.JwtRestResponse;
 
 public interface JwtTokenProvider {
     String getJwt();

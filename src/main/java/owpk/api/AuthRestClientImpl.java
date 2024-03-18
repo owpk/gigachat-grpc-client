@@ -7,21 +7,22 @@ import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.RequestBody;
 import lombok.extern.slf4j.Slf4j;
-import owpk.JwtRestResponse;
-import owpk.config.AppSettings;
+import owpk.model.JwtRestResponse;
+import owpk.storage.main.MainSettings;
+import owpk.storage.main.MainSettingsStore;
 
 import java.util.Date;
 import java.util.UUID;
 
 @Slf4j
 public class AuthRestClientImpl implements AuthRestClient {
-    private final AppSettings settings;
+    private final MainSettings settings;
     private final OkHttpClient okHttp;
     //    private final UnirestInstance unirest;
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public AuthRestClientImpl(AppSettings settings, OkHttpClient okHttp) {
-        this.settings = settings;
+    public AuthRestClientImpl(MainSettingsStore settings, OkHttpClient okHttp) {
+        this.settings = settings.getSettings();
         this.okHttp = okHttp;
         init();
     }

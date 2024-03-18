@@ -1,67 +1,61 @@
 package owpk;
 
 import io.micronaut.configuration.picocli.PicocliRunner;
-import owpk.cli.GigachatCommand;
-import owpk.storage.SettingsStore;
+import lombok.extern.slf4j.Slf4j;
+import owpk.cli.ChatCommand;
+import owpk.storage.FileSettingsStore;
+import owpk.storage.main.MainSettingsStore;
+import owpk.storage.roles.RolesStorage;
+import owpk.utils.FileUtils;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
+@Slf4j
 public class Application {
+    public static final String USER_HOME = System.getProperty("user.home");
+    private static final String APP_HOME_NAME = ".gigachat-cli";
+    public static final Path APP_HOME_DIR = Paths.get(USER_HOME, APP_HOME_NAME);
+    private static final String APP_CONFIG_NAME = "gigachat.properties";
+    public static final Path SETTINGS_FILE = Paths.get(APP_HOME_DIR.toString(), APP_CONFIG_NAME);
+    public static String osName;
 
-    public static final String userHome = System.getProperty("user.home");
-    public static final String appHome = userHome + File.separator + ".gigachat-cli";
-    public static final String settingsHome = appHome + File.separator + "gigachat.properties";
-    public static File homeDir = new File(appHome);
-    public static File settingsFile;
-
-
-    private static void init() throws IOException {
+    private static void init() {
+        try {
+            var rawOsName = Files.readString(Paths.get("/etc/issue"));
+            osName = rawOsName.substring(0, rawOsName.indexOf("\\")).trim();
+        } catch (IOException e) {
+            osName = System.getProperty("os.name");
+        }
         initConfigHome();
-        initFileLogger();
-        System.setProperty("micronaut.config.files", settingsHome);
     }
 
-    private static void initConfigHome() throws IOException {
-        settingsFile = new File(settingsHome);
-        var parent = settingsFile.getParentFile();
-
-        if (parent != null && !parent.exists() && !parent.mkdirs())
-            throw new IllegalStateException("Couldn't create dir: " + parent);
-
-        if (!settingsFile.exists()) {
-            if (settingsFile.createNewFile()) {
-                System.out.println("Creating new settings file: " + settingsFile.getAbsolutePath());
-                var defaults = SettingsStore.getDefaltProperties();
-                SettingsStore.storeProps(defaults, settingsFile);
-            } else {
-                throw new IllegalStateException("Cannot create settings file");
-            }
+    private static void initConfigHome() {
+        if (FileUtils.createFileWithDirs(SETTINGS_FILE)) {
+            System.out.println("Creating new settings file: " + SETTINGS_FILE);
+            var defaults = MainSettingsStore.getDefaltProperties();
+            FileSettingsStore.storeProps(defaults, SETTINGS_FILE);
         }
     }
 
-    //TODO native image crashes with it, need to fix
-    private static void initFileLogger() {
-//        var ctx = (LoggerContext) LoggerFactory.getILoggerFactory();
-//        var rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-//
-//        var ple = new PatternLayoutEncoder();
-//        ple.setPattern(LoggingUtils.LOGGING_PATTERN);
-//        ple.setContext(ctx);
-//        ple.start();
-//
-//        var appender = new FileAppender<ILoggingEvent>();
-//        appender.setName("FILE");
-//        appender.setFile(Paths.get(appHome,  "gigachat.log").toString());
-//        appender.setEncoder(ple);
-//        appender.setContext(ctx);
-//        appender.start();
-//
-//        rootLogger.addAppender(appender);
+    public static void main(String[] args) {
+        try {
+            init();
+            PicocliRunner.run(ChatCommand.class, args);
+        } catch (Throwable e) {
+            log.info("Error while running command.", e);
+            System.out.println("Error while running command: " + e.getLocalizedMessage());
+        }
     }
 
-    public static void main(String[] args) throws IOException {
-        init();
-        PicocliRunner.run(GigachatCommand.class, args);
+    public static void showApiDocsHelp() {
+        System.out.println("""
+                Please visit
+                \thttps://developers.sber.ru/docs/ru/gigachat/api/reference/rest/post-token
+                \tfor more information
+                """);
     }
+
 }

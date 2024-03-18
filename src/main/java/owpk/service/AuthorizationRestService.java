@@ -2,31 +2,30 @@ package owpk.service;
 
 import lombok.extern.slf4j.Slf4j;
 import owpk.GigaChatConstants;
-import owpk.JwtRestResponse;
 import owpk.api.AuthRestClient;
-import owpk.config.AppSettings;
 import owpk.grpc.JwtTokenProvider;
-import owpk.storage.SettingsStore;
+import owpk.model.JwtRestResponse;
+import owpk.storage.main.MainSettings;
+import owpk.storage.main.MainSettingsStore;
 
 import java.util.Date;
 
 @Slf4j
 public class AuthorizationRestService implements JwtTokenProvider {
     private final AuthRestClient client;
-    private final AppSettings settings;
-    private final SettingsStore settingsStore;
-    private final String credentialsHash;
+    private final MainSettings settings;
+    private final MainSettingsStore mainSettingsStore;
 
-    public AuthorizationRestService(AuthRestClient client, SettingsStore settingsStore) {
+    public AuthorizationRestService(AuthRestClient client, MainSettingsStore mainSettingsStore) {
         this.client = client;
-        this.settings = settingsStore.getAppSettings();
-        credentialsHash = settings.getComposedCredentials();
-        this.settingsStore = settingsStore;
+        this.settings = mainSettingsStore.getSettings();
+        this.mainSettingsStore = mainSettingsStore;
     }
 
     @Override
     public String getJwt() {
         log.info("JWT: Attempt to retrieve jwt token...");
+
         var currentJwt = settings.getJwt();
         if (currentJwt != null && currentJwt.getAccessToken() != null
                 && validateExpiration(currentJwt.getExpiresAt())) {
@@ -40,14 +39,14 @@ public class AuthorizationRestService implements JwtTokenProvider {
     @Override
     public JwtRestResponse refreshToken() {
         log.info("JWT: Attempting to refresh token...");
-        var jwt = client.authorize(GigaChatConstants.Scope.PERSONAL, credentialsHash);
+        var jwt = client.authorize(GigaChatConstants.Scope.PERSONAL, settings.getComposedCredentials());
         rewriteJwt(jwt);
         return jwt;
     }
 
     public void rewriteJwt(JwtRestResponse jwt) {
-        settingsStore.setProperty("gigachat.jwt.accessToken", jwt.getAccessToken());
-        settingsStore.setProperty("gigachat.jwt.expiresAt", jwt.getExpiresAt().toString());
+        mainSettingsStore.setProperty("gigachat.jwt.accessToken", jwt.getAccessToken());
+        mainSettingsStore.setProperty("gigachat.jwt.expiresAt", jwt.getExpiresAt().toString());
         settings.getJwt().setAccessToken(jwt.getAccessToken());
         settings.getJwt().setExpiresAt(jwt.getExpiresAt());
     }

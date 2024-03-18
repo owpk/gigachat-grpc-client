@@ -1,11 +1,8 @@
 package owpk.api;
 
-import owpk.JwtRestResponse;
+import owpk.model.JwtRestResponse;
 
 public interface AuthRestClient {
 
-    JwtRestResponse authorize(String scope,
-                              String basicAuth
-
-    );
+    JwtRestResponse authorize(String scope, String basicAuth);
 }

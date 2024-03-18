@@ -3,23 +3,36 @@ package owpk.service;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import lombok.extern.slf4j.Slf4j;
+import owpk.role.RolePrompt;
+import owpk.storage.main.MainSettingField;
+import owpk.storage.main.MainSettingsStore;
 
+// TODO search for aop/proxy solution
 @Slf4j
-public class RetryingChatWrapper {
-    private final ChatService delegate;
+public class RetryingChatWrapper implements ChatService {
+    private final MainSettingsStore mainSettingsStore;
     private final AuthorizationRestService authorizationRestService;
+    private final ChatService delegate;
 
-    public RetryingChatWrapper(ChatService delegate, AuthorizationRestService authorizationRestService) {
+    public RetryingChatWrapper(MainSettingsStore mainSettingsStore,
+                               ChatService delegate,
+                               AuthorizationRestService authorizationRestService) {
+        this.mainSettingsStore = mainSettingsStore;
         this.delegate = delegate;
         this.authorizationRestService = authorizationRestService;
     }
 
-    public void chat(String query) {
-        catchUnauthorized(() -> delegate.chat(query));
+    public void setUnaryMode() {
+        delegate.setUnaryMode();
     }
 
-    public void chatStream(String query) {
-        catchUnauthorized(() -> delegate.chatStream(query));
+    public void setStreamMode() {
+        delegate.setStreamMode();
+    }
+
+    @Override
+    public void chat(RolePrompt rolePrompt) {
+        catchUnauthorized(() -> delegate.chat(rolePrompt));
     }
 
     private void catchUnauthorized(Runnable callable) {
@@ -33,6 +46,7 @@ public class RetryingChatWrapper {
                     authorizationRestService.refreshToken();
                     callable.run();
                 } catch (Exception ex) {
+                    mainSettingsStore.setProperty(MainSettingField.COMPOSED_CREDENTIALS.getPropertyKey(), "");
                     throw new RuntimeException("Error while refreshing token", ex);
                 }
             } else throw e;
