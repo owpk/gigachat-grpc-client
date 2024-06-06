@@ -14,6 +14,7 @@ public class MainSettings {
     String model;
     String composedCredentials;
     String authUri;
+    String currentChat;
     Jwt jwt;
 
     @Data

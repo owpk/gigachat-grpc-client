@@ -1,11 +1,10 @@
-package owpk.storage;
+package owpk.storage.app;
 
 import org.yaml.snakeyaml.Yaml;
 import owpk.role.CodeRolePrompt;
 import owpk.role.DescribeRolePrompt;
 import owpk.role.ShellRolePrompt;
 import owpk.settings.roles.Role;
-import owpk.storage.app.AbsPropertiesFileStorage;
 
 import java.io.FileInputStream;
 import java.io.FileWriter;

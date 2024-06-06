@@ -24,4 +24,15 @@ public class FileUtils {
         }
         return false;
     }
+
+    public static Path createTempFile(byte[] data, String name) {
+        Path path;
+        try {
+            path = Files.createTempFile(name, ".tmp");
+            Files.write(path, data);
+            return path;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

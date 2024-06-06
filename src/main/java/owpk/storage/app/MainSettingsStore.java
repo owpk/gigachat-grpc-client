@@ -40,7 +40,7 @@ public class MainSettingsStore extends AbsPropertiesFileStorage<MainSettings> {
     @Override
     public void createDefaults() {
         var props = MainSettingsStore.getDefaltProperties();
-        FileSettingsStore.storeProps(props, settingsFile);
+        FilePropertiesStore.storeProps(props, settingsFile);
     }
 
     public void setProperty(String key, String value) {
@@ -58,7 +58,7 @@ public class MainSettingsStore extends AbsPropertiesFileStorage<MainSettings> {
         props.put(MainSettingField.AUTH_URI.getPropertyKey(), mainSettings.getAuthUri());
         props.put(MainSettingField.TARGET.getPropertyKey(), mainSettings.getTarget());
         props.put(MainSettingField.MODEL.getPropertyKey(), mainSettings.getModel());
-        FileSettingsStore.storeProps(props, settingsFile);
+        FilePropertiesStore.storeProps(props, settingsFile);
         return props;
     }
 

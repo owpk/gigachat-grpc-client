@@ -1,45 +1,58 @@
 package owpk.service;
 
 import com.google.common.io.ByteStreams;
-import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import owpk.Application;
-import owpk.GigaChatConstants;
 import owpk.model.ChatMessage;
+import owpk.settings.main.MainSettingField;
+import owpk.storage.LocalStorage;
+import owpk.storage.Storage;
+import owpk.storage.app.MainSettingsStore;
 import owpk.utils.FileUtils;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Predicate;
 
 import static owpk.GigaChatConstants.MessageRole.ASSISTANT;
 import static owpk.GigaChatConstants.MessageRole.USER;
 
 @Slf4j
-@Singleton
 public class ChatHistoryService {
     private static final String ROLE_PREFIX = "## [[_Role: ";
     private static final String ROLE_SUFFIX = " ]]";
     private static final String ROLE_USER_PAT = formatRoll(USER.getValue());
     private static final String ROLE_CHAT_PAT = formatRoll(ASSISTANT.getValue());
-    // TODO exclude to some props
-    public static final String FILE_NAME = String.format("chat-%s.md",
-            new SimpleDateFormat("yyyy-MM-dd").format(System.currentTimeMillis()));
 
-    private static final Path CHAT_FILE_PATH =
-            Paths.get(Application.APP_HOME_DIR.toString(), "chats", FILE_NAME);
+    private final Storage storage;
+    private final MainSettingsStore mainSettingsStore;
 
-    public ChatHistoryService() {
-        FileUtils.createFileWithDirs(CHAT_FILE_PATH);
+    public ChatHistoryService(MainSettingsStore mainSettingsStore) {
+        Path CHAT_FILE_ROOT = Paths.get(Application.APP_HOME_DIR.toString(), "chats");
+        this.mainSettingsStore = mainSettingsStore;
+        this.storage = new LocalStorage(CHAT_FILE_ROOT);
+    }
+
+    private String createFileName() {
+        return String.format("chat-%s-%s.md",
+                new SimpleDateFormat("yyyy-MM-dd")
+                        .format(System.currentTimeMillis()),
+                UUID.randomUUID());
+    }
+
+    public String createNewChat() {
+        String fileName = createFileName();
+        mainSettingsStore.setProperty(MainSettingField.CURRENT_CHAT.name(), fileName);
+        storage.createFile(fileName);
+        return fileName;
     }
 
     private static String formatRoll(String pattern) {
@@ -81,9 +94,10 @@ public class ChatHistoryService {
 
     private List<ChatMessage> readLastMessages(Predicate<Integer> predicate, boolean reversed, boolean all) {
         var messages = new ArrayList<ChatMessage>();
-
-        try (var raf = new RandomAccessFile(CHAT_FILE_PATH.toFile(), "r")) {
-            long fileLength = CHAT_FILE_PATH.toFile().length();
+        var data = storage.readFile(getCurrentFileName());
+        var chatTempFile = FileUtils.createTempFile(data, "chat_history" + UUID.randomUUID());
+        try (var raf = new RandomAccessFile(chatTempFile.toFile(), "r")) {
+            long fileLength = data.length;
             raf.seek(fileLength);
 
             var linesList = new ArrayList<String>();
@@ -138,22 +152,26 @@ public class ChatHistoryService {
     public void persistContentToHistory(String content, String role) {
         var roleString = formatRoll(role);
         var body = (content + "\n").getBytes(StandardCharsets.UTF_8);
-        try {
             var roleBytes = (roleString + "\n").getBytes();
             byte[] composedArray = new byte[body.length + roleBytes.length];
             System.arraycopy(roleBytes, 0, composedArray, 0, roleBytes.length);
             System.arraycopy(body, 0, composedArray, roleBytes.length, body.length);
-            Files.write(CHAT_FILE_PATH, composedArray, StandardOpenOption.APPEND);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+            storage.writeFile(getCurrentFileName(), composedArray, true);
+    }
+
+    public String getCurrentFileName() {
+        var name = mainSettingsStore.getProperty(MainSettingField.CURRENT_CHAT.name());
+        if (name == null || name.isBlank())
+            return createNewChat();
+        return name;
     }
 
     public void clearChatHistory() {
-        try {
-            Files.deleteIfExists(CHAT_FILE_PATH);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        storage.writeFile(getCurrentFileName(), new byte[0], false);
+    }
+
+    // TODO implement
+    public List<ChatMessage> readAllMessages() {
+        return null;
     }
 }
