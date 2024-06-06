@@ -1,6 +1,7 @@
 package owpk.service;
 
 import com.google.common.io.ByteStreams;
+import jdk.jshell.spi.ExecutionControl;
 import lombok.extern.slf4j.Slf4j;
 import owpk.Application;
 import owpk.model.ChatMessage;
@@ -161,8 +162,11 @@ public class ChatHistoryService {
 
     public String getCurrentFileName() {
         var name = mainSettingsStore.getProperty(MainSettingField.CURRENT_CHAT.name());
-        if (name == null || name.isBlank())
-            return createNewChat();
+        if (name == null || name.isBlank()) {
+            var chatName = createNewChat();
+            mainSettingsStore.setProperty(MainSettingField.CURRENT_CHAT.name(), chatName);
+            return chatName;
+        }
         return name;
     }
 
@@ -170,8 +174,9 @@ public class ChatHistoryService {
         storage.writeFile(getCurrentFileName(), new byte[0], false);
     }
 
-    // TODO implement
+    // TODO implement new
     public List<ChatMessage> readAllMessages() {
-        return null;
+        log.info("asd");
+        throw new RuntimeException("Not implemented yet");
     }
 }
