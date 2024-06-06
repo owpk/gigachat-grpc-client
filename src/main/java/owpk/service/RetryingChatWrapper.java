@@ -4,8 +4,8 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import lombok.extern.slf4j.Slf4j;
 import owpk.role.RolePrompt;
-import owpk.storage.main.MainSettingField;
-import owpk.storage.main.MainSettingsStore;
+import owpk.settings.main.MainSettingField;
+import owpk.storage.app.MainSettingsStore;
 
 // TODO search for aop/proxy solution
 @Slf4j

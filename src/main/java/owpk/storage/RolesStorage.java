@@ -1,19 +1,19 @@
-package owpk.storage.roles;
+package owpk.storage;
 
 import org.yaml.snakeyaml.Yaml;
 import owpk.role.CodeRolePrompt;
 import owpk.role.DescribeRolePrompt;
 import owpk.role.ShellRolePrompt;
-import owpk.storage.AbsPropertiesFileStorage;
+import owpk.settings.roles.Role;
+import owpk.storage.app.AbsPropertiesFileStorage;
 
 import java.io.FileInputStream;
 import java.io.FileWriter;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static owpk.storage.roles.RoleField.*;
+import static owpk.settings.roles.RoleField.*;
 
 public class RolesStorage extends AbsPropertiesFileStorage<Map<String, Role>> {
     private static final String LIST_KEY = "roles";

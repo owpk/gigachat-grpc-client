@@ -1,4 +1,4 @@
-package owpk.storage;
+package owpk.storage.app;
 
 import java.io.FileOutputStream;
 import java.io.IOException;

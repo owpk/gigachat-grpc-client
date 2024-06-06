@@ -4,7 +4,7 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import owpk.Application;
 import owpk.GigaChatConstants;
-import owpk.storage.roles.Role;
+import owpk.settings.roles.Role;
 
 @FieldDefaults(level = AccessLevel.PROTECTED)
 public abstract class SystemRolePrompt extends RolePrompt {

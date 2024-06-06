@@ -1,4 +1,4 @@
-package owpk.storage;
+package owpk.storage.app;
 
 import lombok.extern.slf4j.Slf4j;
 import owpk.Application;

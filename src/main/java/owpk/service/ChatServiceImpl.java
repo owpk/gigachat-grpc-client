@@ -5,11 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import owpk.GigaChatConstants;
 import owpk.grpc.GigaChatGRpcClient;
 import owpk.role.RolePrompt;
-import owpk.storage.main.MainSettings;
-import owpk.storage.main.MainSettingsStore;
+import owpk.settings.main.MainSettings;
+import owpk.storage.app.MainSettingsStore;
 
 import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;

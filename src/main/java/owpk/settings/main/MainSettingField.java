@@ -1,4 +1,4 @@
-package owpk.storage.main;
+package owpk.settings.main;
 
 import lombok.Getter;
 import owpk.utils.PropertiesEnumMapper;
@@ -14,6 +14,7 @@ public enum MainSettingField {
     TARGET("gigachat.target", "gigachat.devices.sberbank.ru"),
     JWT_ACCESS_TOKEN("gigachat.jwt.accessToken", "NOT_VALID_JWT"),
     JWT_EXPIRES_AT("gigachat.jwt.expiresAt", "0"),
+    CURRENT_CHAT("current_chat", ""),
     AUTH_URI("gigachat.authUri", "https://ngw.devices.sberbank.ru:9443/api/v2/oauth");
 
     public static final Map<String, MainSettingField> valuesMap =
@@ -21,14 +22,14 @@ public enum MainSettingField {
 
     public static final Map<String, String> propertiesMap =
             valuesMap.values().stream()
-            .collect(Collectors.toMap(MainSettingField::getPropertyKey, MainSettingField::getValue));
+            .collect(Collectors.toMap(MainSettingField::getPropertyKey, MainSettingField::getDefaultValue));
 
     private final String propertyKey;
-    private final String value;
+    private final String defaultValue;
 
-    MainSettingField(String propertyKey, String value) {
+    MainSettingField(String propertyKey, String defaultValue) {
         this.propertyKey = propertyKey;
-        this.value = value;
+        this.defaultValue = defaultValue;
     }
 
     public static MainSettingField getByName(String name) {

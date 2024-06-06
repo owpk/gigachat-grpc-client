@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import owpk.role.*;
 import owpk.service.RetryingChatWrapper;
-import owpk.storage.roles.RolesStorage;
+import owpk.storage.RolesStorage;
 import owpk.utils.LoggingUtils;
 import picocli.CommandLine;
 

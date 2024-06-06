@@ -1,11 +1,10 @@
-package owpk.storage.main;
+package owpk.storage.app;
 
 import lombok.extern.slf4j.Slf4j;
 import owpk.Application;
-import owpk.storage.AbsPropertiesFileStorage;
-import owpk.storage.FileSettingsStore;
+import owpk.settings.main.MainSettingField;
+import owpk.settings.main.MainSettings;
 
-import java.nio.file.Path;
 import java.util.Properties;
 import java.util.Scanner;
 

@@ -1,4 +1,4 @@
-package owpk.storage.roles;
+package owpk.settings.roles;
 
 import lombok.Getter;
 import owpk.utils.PropertiesEnumMapper;

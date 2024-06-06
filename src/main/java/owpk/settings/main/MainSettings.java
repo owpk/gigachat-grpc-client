@@ -1,4 +1,4 @@
-package owpk.storage.main;
+package owpk.settings.main;
 
 import io.micronaut.core.annotation.Introspected;
 import lombok.Data;

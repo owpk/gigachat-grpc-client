@@ -32,7 +32,7 @@ public class ChatHistoryService {
     private static final String ROLE_USER_PAT = formatRoll(USER.getValue());
     private static final String ROLE_CHAT_PAT = formatRoll(ASSISTANT.getValue());
     // TODO exclude to some props
-    private static final String FILE_NAME = String.format("chat-%s.md",
+    public static final String FILE_NAME = String.format("chat-%s.md",
             new SimpleDateFormat("yyyy-MM-dd").format(System.currentTimeMillis()));
 
     private static final Path CHAT_FILE_PATH =
