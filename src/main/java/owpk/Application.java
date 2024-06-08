@@ -14,11 +14,11 @@ import java.nio.file.Paths;
 
 @Slf4j
 public class Application {
-    public static final String USER_HOME = System.getProperty("user.home");
-    private static final String APP_HOME_NAME = ".gigachat-cli";
-    public static final Path APP_HOME_DIR = Paths.get(USER_HOME, APP_HOME_NAME);
-    private static final String APP_CONFIG_NAME = "gigachat.properties";
-    public static final Path SETTINGS_FILE = Paths.get(APP_HOME_DIR.toString(), APP_CONFIG_NAME);
+    public static final String  USER_HOME = System.getProperty("user.home");
+    public static final String  APP_HOME_NAME = ".gigachat-cli";
+    public static final Path    APP_HOME_DIR = Paths.get(USER_HOME, APP_HOME_NAME);
+    public static final String  APP_CONFIG_NAME = "gigachat.properties";
+    public static final Path    SETTINGS_FILE = Paths.get(APP_HOME_DIR.toString(), APP_CONFIG_NAME);
     public static String osName;
 
     private static void init() {
