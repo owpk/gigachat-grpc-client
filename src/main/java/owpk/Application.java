@@ -3,7 +3,7 @@ package owpk;
 import io.micronaut.configuration.picocli.PicocliRunner;
 import lombok.extern.slf4j.Slf4j;
 import owpk.cli.ChatCommand;
-import owpk.storage.app.FileSettingsStore;
+import owpk.storage.app.FilePropertiesStore;
 import owpk.storage.app.MainSettingsStore;
 import owpk.utils.FileUtils;
 
@@ -35,7 +35,7 @@ public class Application {
         if (FileUtils.createFileWithDirs(SETTINGS_FILE)) {
             System.out.println("Creating new settings file: " + SETTINGS_FILE);
             var defaults = MainSettingsStore.getDefaltProperties();
-            FileSettingsStore.storeProps(defaults, SETTINGS_FILE);
+            FilePropertiesStore.storeProps(defaults, SETTINGS_FILE);
         }
     }
 

@@ -10,7 +10,7 @@ import owpk.api.AuthRestClientImpl;
 import owpk.grpc.GigaChatGRpcClient;
 import owpk.service.*;
 import owpk.storage.app.MainSettingsStore;
-import owpk.storage.RolesStorage;
+import owpk.storage.app.RolesStorage;
 import picocli.CommandLine;
 
 import javax.net.ssl.SSLContext;
@@ -100,6 +100,11 @@ public class BeanFactory {
                                    ChatHistoryService historyService,
                                    MainSettingsStore mainSettingsStore) {
         return new ChatServiceImpl(gRpcClient, historyService, mainSettingsStore);
+    }
+
+    @Singleton
+    public ChatHistoryService chatHistoryService(MainSettingsStore mainSettingsStore) {
+       return new ChatHistoryService(mainSettingsStore);
     }
 
     @Singleton
