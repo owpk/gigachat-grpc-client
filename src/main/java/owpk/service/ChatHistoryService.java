@@ -51,7 +51,7 @@ public class ChatHistoryService {
 
     public String createNewChat() {
         String fileName = createFileName();
-        mainSettingsStore.setProperty(MainSettingField.CURRENT_CHAT.name(), fileName);
+        mainSettingsStore.setProperty(MainSettingField.CURRENT_CHAT.getPropertyKey(), fileName);
         storage.createFile(fileName);
         return fileName;
     }
