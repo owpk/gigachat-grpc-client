@@ -3,8 +3,8 @@ package owpk.cli;
 import jakarta.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import owpk.utils.LoggingUtils;
-import owpk.storage.main.MainSettingField;
-import owpk.storage.main.MainSettingsStore;
+import owpk.settings.main.MainSettingField;
+import owpk.storage.app.MainSettingsStore;
 import picocli.CommandLine;
 
 @CommandLine.Command(name = "config", aliases = {"cfg", "conf"}, description = "Create or show config.")

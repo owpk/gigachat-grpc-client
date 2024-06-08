@@ -1,11 +1,10 @@
-package owpk.storage.main;
+package owpk.storage.app;
 
 import lombok.extern.slf4j.Slf4j;
 import owpk.Application;
-import owpk.storage.AbsPropertiesFileStorage;
-import owpk.storage.FileSettingsStore;
+import owpk.settings.main.MainSettingField;
+import owpk.settings.main.MainSettings;
 
-import java.nio.file.Path;
 import java.util.Properties;
 import java.util.Scanner;
 
@@ -41,7 +40,7 @@ public class MainSettingsStore extends AbsPropertiesFileStorage<MainSettings> {
     @Override
     public void createDefaults() {
         var props = MainSettingsStore.getDefaltProperties();
-        FileSettingsStore.storeProps(props, settingsFile);
+        FilePropertiesStore.storeProps(props, settingsFile);
     }
 
     public void setProperty(String key, String value) {
@@ -59,7 +58,7 @@ public class MainSettingsStore extends AbsPropertiesFileStorage<MainSettings> {
         props.put(MainSettingField.AUTH_URI.getPropertyKey(), mainSettings.getAuthUri());
         props.put(MainSettingField.TARGET.getPropertyKey(), mainSettings.getTarget());
         props.put(MainSettingField.MODEL.getPropertyKey(), mainSettings.getModel());
-        FileSettingsStore.storeProps(props, settingsFile);
+        FilePropertiesStore.storeProps(props, settingsFile);
         return props;
     }
 

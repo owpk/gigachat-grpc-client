@@ -1,4 +1,4 @@
-package owpk.storage;
+package owpk.storage.app;
 
 import lombok.extern.slf4j.Slf4j;
 import owpk.Application;
@@ -12,7 +12,7 @@ import java.nio.file.Paths;
 import java.util.Properties;
 
 @Slf4j
-public abstract class AbsPropertiesFileStorage<T> implements FileSettingsStore<T> {
+public abstract class AbsPropertiesFileStorage<T> implements FilePropertiesStore<T> {
     protected Path settingsFile;
     protected Properties properties;
     protected T settings;
@@ -23,7 +23,7 @@ public abstract class AbsPropertiesFileStorage<T> implements FileSettingsStore<T
 
         load();
         settings = initSettings();
-        log.info("Init application settings store: " + settingsFile);
+        log.info("Init application settings store: {}", settingsFile);
     }
 
     protected abstract T initSettings();
@@ -66,7 +66,7 @@ public abstract class AbsPropertiesFileStorage<T> implements FileSettingsStore<T
 
     protected void storeProps() {
         log.info("Storing properties...");
-        FileSettingsStore.storeProps(properties, settingsFile);
+        FilePropertiesStore.storeProps(properties, settingsFile);
     }
 
 }

@@ -8,8 +8,8 @@ import com.squareup.okhttp.Request;
 import com.squareup.okhttp.RequestBody;
 import lombok.extern.slf4j.Slf4j;
 import owpk.model.JwtRestResponse;
-import owpk.storage.main.MainSettings;
-import owpk.storage.main.MainSettingsStore;
+import owpk.settings.main.MainSettings;
+import owpk.storage.app.MainSettingsStore;
 
 import java.util.Date;
 import java.util.UUID;

@@ -1,4 +1,4 @@
-package owpk.storage.main;
+package owpk.settings.main;
 
 import io.micronaut.core.annotation.Introspected;
 import lombok.Data;
@@ -14,6 +14,7 @@ public class MainSettings {
     String model;
     String composedCredentials;
     String authUri;
+    String currentChat;
     Jwt jwt;
 
     @Data

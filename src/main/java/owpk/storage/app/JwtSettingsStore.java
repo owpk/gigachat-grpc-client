@@ -1,10 +1,7 @@
-package owpk.storage.jwt;
+package owpk.storage.app;
 
-import owpk.storage.AbsPropertiesFileStorage;
-import owpk.storage.FileSettingsStore;
-import owpk.storage.main.MainSettings;
+import owpk.settings.main.MainSettings;
 
-import java.nio.file.Path;
 import java.util.Properties;
 
 // TODO separate jwt settings from main file

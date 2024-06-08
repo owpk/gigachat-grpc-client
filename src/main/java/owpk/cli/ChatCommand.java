@@ -6,8 +6,9 @@ import jakarta.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import owpk.role.*;
+import owpk.service.ChatHistoryService;
 import owpk.service.RetryingChatWrapper;
-import owpk.storage.roles.RolesStorage;
+import owpk.storage.app.RolesStorage;
 import owpk.utils.LoggingUtils;
 import picocli.CommandLine;
 
@@ -25,6 +26,7 @@ public class ChatCommand implements Runnable {
     private final LoggingSystem loggingSystem;
     private final RetryingChatWrapper retryingChatWrapper;
     private final RolesStorage rolesStorage;
+    private final ChatHistoryService chatHistoryService;
 
     private Supplier<RolePrompt> roleSupplier =
             () -> new DefaultChatRolePrompt(collapseInput(), 6);
@@ -32,14 +34,16 @@ public class ChatCommand implements Runnable {
     @Inject
     public ChatCommand(LoggingSystem loggingSystem,
                        RetryingChatWrapper retryingChatWrapper,
-                       RolesStorage rolesStorage) {
+                       RolesStorage rolesStorage, ChatHistoryService chatHistoryService) {
         this.loggingSystem = loggingSystem;
         this.retryingChatWrapper = retryingChatWrapper;
         this.rolesStorage = rolesStorage;
+        this.chatHistoryService = chatHistoryService;
     }
 
     @CommandLine.Option(names = {"-v", "--version"}, versionHelp = true, description = "Print version info.")
     boolean versionRequested;
+
     @CommandLine.Parameters(description = "User query")
     String[] query;
 
@@ -68,14 +72,10 @@ public class ChatCommand implements Runnable {
     }
 
     @CommandLine.Option(names = {"-r", "--custom-role"}, description = "Apply user defined role as system prompt.")
-    public void customRole(String roleName) {
+    public void customRole(String roleName) throws IllegalArgumentException {
         if (roleName != null && !roleName.isBlank()) {
-            try {
-                roleSupplier = () -> SystemRolePrompt.create(collapseInput(),
-                        rolesStorage.getRole(DescribeRolePrompt.NAME));
-            } catch (IllegalArgumentException e) {
-                System.out.println(e.getLocalizedMessage());
-            }
+            roleSupplier = () -> SystemRolePrompt.create(collapseInput(),
+                    rolesStorage.getRole(DescribeRolePrompt.NAME));
         }
     }
 
@@ -89,6 +89,12 @@ public class ChatCommand implements Runnable {
                     """);
             CommandLine.usage(this, System.out);
         }
+    }
+
+    @CommandLine.Option(names = {"-n", "--new"}, description = "Create new chat")
+    public void createNewChat(boolean createNewChat) {
+        if (createNewChat)
+            chatHistoryService.createNewChat();
     }
 
     @CommandLine.Option(names = {"-u", "--unary"},
@@ -126,7 +132,7 @@ public class ChatCommand implements Runnable {
                 pipedInput.append(line).append("\n");
             }
         } catch (Exception e) {
-            log.info("Error while reading piped input: " + e);
+            log.info("Error while reading piped input", e);
         }
         
         role.setUserQuery(role.getUserQuery() + 

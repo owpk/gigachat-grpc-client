@@ -5,8 +5,8 @@ import owpk.GigaChatConstants;
 import owpk.api.AuthRestClient;
 import owpk.grpc.JwtTokenProvider;
 import owpk.model.JwtRestResponse;
-import owpk.storage.main.MainSettings;
-import owpk.storage.main.MainSettingsStore;
+import owpk.settings.main.MainSettings;
+import owpk.storage.app.MainSettingsStore;
 
 import java.util.Date;
 
