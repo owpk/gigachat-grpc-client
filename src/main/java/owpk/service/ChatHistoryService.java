@@ -50,9 +50,13 @@ public class ChatHistoryService {
     }
 
     public String createNewChat() {
+        log.info("Creating new chat...");
+
         String fileName = createFileName();
         mainSettingsStore.setProperty(MainSettingField.CURRENT_CHAT.getPropertyKey(), fileName);
         storage.createFile(fileName);
+
+        log.info("New chat created: {}", fileName);
         return fileName;
     }
 
@@ -161,7 +165,7 @@ public class ChatHistoryService {
     }
 
     public String getCurrentFileName() {
-        var name = mainSettingsStore.getProperty(MainSettingField.CURRENT_CHAT.name());
+        var name = mainSettingsStore.getProperty(MainSettingField.CURRENT_CHAT.getPropertyKey());
         if (name == null || name.isBlank()) {
             var chatName = createNewChat();
             mainSettingsStore.setProperty(MainSettingField.CURRENT_CHAT.name(), chatName);

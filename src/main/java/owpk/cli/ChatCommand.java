@@ -34,7 +34,8 @@ public class ChatCommand implements Runnable {
     @Inject
     public ChatCommand(LoggingSystem loggingSystem,
                        RetryingChatWrapper retryingChatWrapper,
-                       RolesStorage rolesStorage, ChatHistoryService chatHistoryService) {
+                       RolesStorage rolesStorage,
+                       ChatHistoryService chatHistoryService) {
         this.loggingSystem = loggingSystem;
         this.retryingChatWrapper = retryingChatWrapper;
         this.rolesStorage = rolesStorage;
@@ -91,7 +92,8 @@ public class ChatCommand implements Runnable {
         }
     }
 
-    @CommandLine.Option(names = {"-n", "--new"}, description = "Create new chat")
+    @CommandLine.Option(names = {"-n", "--new"},
+            description = "Create new chat", defaultValue = "false")
     public void createNewChat(boolean createNewChat) {
         if (createNewChat)
             chatHistoryService.createNewChat();
