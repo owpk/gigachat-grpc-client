@@ -106,7 +106,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     protected void baseChatRequest(RolePrompt rolePrompt) {
-        log.info("Chat request: " + rolePrompt);
+        log.info("Chat request: {}", rolePrompt);
 
         var lastMessages = readLastMessages(rolePrompt.getChatHistoryContextSize());
         persistRequest(rolePrompt.getUserQuery());
