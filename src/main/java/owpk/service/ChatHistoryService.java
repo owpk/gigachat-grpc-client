@@ -38,21 +38,18 @@ public class ChatHistoryService {
     }
 
     public String createOrGetLastChat(Storage storage) {
-        var chatHome = mainProps.getProperty(MainProps.DEF_CHATS_HISTORY_HOME);
         var lastChat = mainProps.getProperty(MainProps.DEF_CURRENT_CHAT_NAME);
-        if (lastChat == null || lastChat.isBlank()) {
-            lastChat = createFileName();
-            mainProps.setProperty(MainProps.DEF_CURRENT_CHAT_NAME, lastChat);
-            storage.createFileOrDirIfNotExists(chatHome + lastChat);
-        }
+        if (lastChat == null || lastChat.isBlank())
+            lastChat = createNewChat();
         return lastChat;
     }
 
     public String createNewChat() {
         log.info("Creating new chat...");
         String fileName = createFileName();
-        mainProps.setProperty(MainProps.DEF_CHATS_HISTORY_HOME, fileName);
-        storage.createFileOrDirIfNotExists(fileName);
+        mainProps.setProperty(MainProps.DEF_CURRENT_CHAT_NAME, fileName);
+        var chatHome = mainProps.getProperty(MainProps.DEF_CHATS_HISTORY_HOME);
+        storage.createFileOrDirIfNotExists(chatHome + fileName);
         log.info("New chat created: {}", fileName);
         return fileName;
     }
