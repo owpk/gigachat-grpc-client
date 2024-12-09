@@ -7,8 +7,14 @@ import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import owpk.api.AuthRestClient;
 import owpk.api.AuthRestClientImpl;
+import owpk.cli.SimpleConsoleOutputEngine;
 import owpk.grpc.GigaChatGRpcClient;
+import owpk.output.OutputEngine;
 import owpk.service.*;
+import owpk.service.impl.AuthorizationRestService;
+import owpk.service.impl.ChatHistoryService;
+import owpk.service.impl.ChatServiceImpl;
+import owpk.service.impl.RetryingChatWrapper;
 import owpk.storage.app.MainSettingsStore;
 import owpk.storage.app.RolesStorage;
 import picocli.CommandLine;
@@ -96,10 +102,15 @@ public class BeanFactory {
     }
 
     @Singleton
-    public ChatService chatService(GigaChatGRpcClient gRpcClient,
+    public OutputEngine outputEngine() {
+        return new SimpleConsoleOutputEngine();
+    }
+
+    @Singleton
+    public ChatService chatService(OutputEngine outputEngine, GigaChatGRpcClient gRpcClient,
                                    ChatHistoryService historyService,
                                    MainSettingsStore mainSettingsStore) {
-        return new ChatServiceImpl(gRpcClient, historyService, mainSettingsStore);
+        return new ChatServiceImpl(outputEngine, gRpcClient, historyService, mainSettingsStore);
     }
 
     @Singleton

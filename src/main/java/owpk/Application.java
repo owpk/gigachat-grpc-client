@@ -2,7 +2,7 @@ package owpk;
 
 import io.micronaut.configuration.picocli.PicocliRunner;
 import lombok.extern.slf4j.Slf4j;
-import owpk.cli.ChatCommand;
+import owpk.cli.controller.ChatCommand;
 import owpk.storage.app.FilePropertiesStore;
 import owpk.storage.app.MainSettingsStore;
 import owpk.utils.FileUtils;

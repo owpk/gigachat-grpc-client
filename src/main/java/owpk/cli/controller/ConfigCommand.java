@@ -1,4 +1,4 @@
-package owpk.cli;
+package owpk.cli.controller;
 
 import jakarta.inject.Inject;
 import lombok.extern.slf4j.Slf4j;

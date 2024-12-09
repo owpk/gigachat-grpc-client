@@ -1,4 +1,4 @@
-package owpk.service;
+package owpk.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import owpk.GigaChatConstants;

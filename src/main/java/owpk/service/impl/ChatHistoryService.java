@@ -1,15 +1,6 @@
-package owpk.service;
+package owpk.service.impl;
 
-import com.google.common.io.ByteStreams;
-import jdk.jshell.spi.ExecutionControl;
-import lombok.extern.slf4j.Slf4j;
-import owpk.Application;
-import owpk.model.ChatMessage;
-import owpk.settings.main.MainSettingField;
-import owpk.storage.LocalStorage;
-import owpk.storage.Storage;
-import owpk.storage.app.MainSettingsStore;
-import owpk.utils.FileUtils;
+import static owpk.GigaChatConstants.MessageRole.*;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -23,8 +14,16 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Predicate;
 
-import static owpk.GigaChatConstants.MessageRole.ASSISTANT;
-import static owpk.GigaChatConstants.MessageRole.USER;
+import com.google.common.io.ByteStreams;
+
+import lombok.extern.slf4j.Slf4j;
+import owpk.Application;
+import owpk.model.ChatMessage;
+import owpk.settings.main.MainSettingField;
+import owpk.storage.LocalStorage;
+import owpk.storage.Storage;
+import owpk.storage.app.MainSettingsStore;
+import owpk.utils.FileUtils;
 
 @Slf4j
 public class ChatHistoryService {
@@ -168,7 +167,7 @@ public class ChatHistoryService {
         var name = mainSettingsStore.getProperty(MainSettingField.CURRENT_CHAT.getPropertyKey());
         if (name == null || name.isBlank()) {
             var chatName = createNewChat();
-            mainSettingsStore.setProperty(MainSettingField.CURRENT_CHAT.name(), chatName);
+            mainSettingsStore.setProperty(MainSettingField.CURRENT_CHAT.getPropertyKey(), chatName);
             return chatName;
         }
         return name;
@@ -176,11 +175,5 @@ public class ChatHistoryService {
 
     public void clearChatHistory() {
         storage.writeFile(getCurrentFileName(), new byte[0], false);
-    }
-
-    // TODO implement new
-    public List<ChatMessage> readAllMessages() {
-        log.info("asd");
-        throw new RuntimeException("Not implemented yet");
     }
 }

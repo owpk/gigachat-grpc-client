@@ -1,9 +1,9 @@
-package owpk.cli;
+package owpk.cli.controller;
 
 import jakarta.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import owpk.model.ChatMessage;
-import owpk.service.ChatHistoryService;
+import owpk.service.impl.ChatHistoryService;
 import owpk.utils.LoggingUtils;
 import picocli.CommandLine;
 

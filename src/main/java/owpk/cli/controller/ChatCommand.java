@@ -1,13 +1,15 @@
-package owpk.cli;
+package owpk.cli.controller;
 
 import io.micronaut.logging.LogLevel;
 import io.micronaut.logging.LoggingSystem;
 import jakarta.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
+
+import owpk.cli.VersionProvider;
 import owpk.role.*;
-import owpk.service.ChatHistoryService;
-import owpk.service.RetryingChatWrapper;
+import owpk.service.impl.ChatHistoryService;
+import owpk.service.impl.RetryingChatWrapper;
 import owpk.storage.app.RolesStorage;
 import owpk.utils.LoggingUtils;
 import picocli.CommandLine;

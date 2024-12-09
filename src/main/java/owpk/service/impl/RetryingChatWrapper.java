@@ -1,9 +1,10 @@
-package owpk.service;
+package owpk.service.impl;
 
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import lombok.extern.slf4j.Slf4j;
 import owpk.role.RolePrompt;
+import owpk.service.ChatService;
 import owpk.settings.main.MainSettingField;
 import owpk.storage.app.MainSettingsStore;
 
@@ -54,4 +55,5 @@ public class RetryingChatWrapper implements ChatService {
             log.error("Catch retrying exception: " + e);
         }
     }
+
 }

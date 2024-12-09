@@ -1,30 +1,33 @@
-package owpk.service;
-
-import gigachat.v1.Gigachatv1;
-import lombok.extern.slf4j.Slf4j;
-import owpk.GigaChatConstants;
-import owpk.grpc.GigaChatGRpcClient;
-import owpk.role.RolePrompt;
-import owpk.settings.main.MainSettings;
-import owpk.storage.LocalStorage;
-import owpk.storage.Storage;
-import owpk.storage.app.MainSettingsStore;
+package owpk.service.impl;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import gigachat.v1.Gigachatv1;
+import lombok.extern.slf4j.Slf4j;
+import owpk.GigaChatConstants;
+import owpk.grpc.GigaChatGRpcClient;
+import owpk.output.OutputEngine;
+import owpk.role.RolePrompt;
+import owpk.service.ChatService;
+import owpk.settings.main.MainSettings;
+import owpk.storage.app.MainSettingsStore;
+
 @Slf4j
 public class ChatServiceImpl implements ChatService {
     protected final GigaChatGRpcClient gigaChatGRpcClient;
     protected final MainSettings mainSettings;
     protected final ChatHistoryService chatHistoryService;
+    protected final OutputEngine outputEngine;
     private ChatRequestHandler chatRequestHandler;
 
-    public ChatServiceImpl(GigaChatGRpcClient gigaChatGRpcClient,
-                           ChatHistoryService chatHistoryService,
-                           MainSettingsStore mainSettingsStore) {
+    public ChatServiceImpl(OutputEngine outputEngine,
+            GigaChatGRpcClient gigaChatGRpcClient,
+            ChatHistoryService chatHistoryService,
+            MainSettingsStore mainSettingsStore) {
+        this.outputEngine = outputEngine;
         this.gigaChatGRpcClient = gigaChatGRpcClient;
         this.chatHistoryService = chatHistoryService;
         this.mainSettings = mainSettingsStore.getSettings();
@@ -50,9 +53,9 @@ public class ChatServiceImpl implements ChatService {
                 var msg = iterator.next();
                 var content = defaultHandleResponse(msg);
                 sw.append(content);
-                System.out.print(content);
+                outputEngine.out(content);
             }
-            System.out.println();
+            outputEngine.out("\n");
             return sw.toString();
         };
     }
@@ -61,7 +64,7 @@ public class ChatServiceImpl implements ChatService {
         return request -> {
             var response = gigaChatGRpcClient.chat(request);
             var content = defaultHandleResponse(response);
-            System.out.println(content);
+            outputEngine.out(content + "\n");
             return content;
         };
     }
@@ -72,7 +75,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     protected Gigachatv1.ChatRequest createdRequest(Gigachatv1.Message userRequestMsg,
-                                                    List<Gigachatv1.Message> additionalMessages) {
+            List<Gigachatv1.Message> additionalMessages) {
         return Gigachatv1.ChatRequest.newBuilder()
                 .setModel(mainSettings.getModel())
                 .addAllMessages(additionalMessages)
@@ -139,4 +142,5 @@ public class ChatServiceImpl implements ChatService {
     public interface ChatRequestHandler {
         String handleChatRequest(Gigachatv1.ChatRequest request);
     }
+
 }
