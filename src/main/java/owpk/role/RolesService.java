@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.yaml.snakeyaml.Yaml;
 
@@ -22,6 +24,16 @@ public class RolesService {
     public RolesService(Storage storage, MainProps mainProps) {
         this.storage = storage;
         this.mainProps = mainProps;
+
+        if (!storage.exists(mainProps.getProperty(MainProps.DEF_ROLES_YML))) {
+            storage.createFileOrDirIfNotExists(mainProps.getProperty(MainProps.DEF_ROLES_YML));
+            loadDefaultToYaml();
+        }
+
+        var yml = loadFromYml();
+        var roles = yml.get(LIST_KEY);
+        this.roles.putAll(roles.stream().map(this::toRole)
+                .collect(Collectors.toMap(Role::roleName, Function.identity())));
     }
 
     public Role getRole(String name) {
@@ -32,6 +44,12 @@ public class RolesService {
         var data = storage.getContent(mainProps.getProperty(MainProps.DEF_ROLES_YML));
         var yml = new Yaml();
         return yml.load(new String(data));
+    }
+
+    private void loadDefaultToYaml() {
+        var yml = new Yaml();
+        var dumpedYml = yml.dump(toYml(initDefaultRoles()));
+        storage.saveContent(mainProps.getProperty(MainProps.DEF_ROLES_YML), dumpedYml.getBytes(), false);
     }
 
     private List<Role> initDefaultRoles() {

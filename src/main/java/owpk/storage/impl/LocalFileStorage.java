@@ -51,7 +51,9 @@ public class LocalFileStorage implements Storage {
     public boolean saveContent(String path, byte[] content, boolean append) {
         try {
             var normalized = Path.of(path).normalize();
-            var createdFile = Files.write(normalized, content, append ? StandardOpenOption.APPEND : StandardOpenOption.TRUNCATE_EXISTING);
+            var createdFile = Files.write(normalized, content, append ?
+                StandardOpenOption.APPEND :
+                StandardOpenOption.TRUNCATE_EXISTING);
             return Files.exists(createdFile);
         } catch (IOException e) {
             throw new StorageException(path, e);
@@ -69,8 +71,8 @@ public class LocalFileStorage implements Storage {
     }
 
     @Override
-    public String createFileOrDir(String path) {
-        return FileUtils.createFileWithDirs(Path.of(path)) ? path : null;
+    public String createFileOrDirIfNotExists(String path) {
+        return FileUtils.createFileWithDirs(path) ? path : null;
     }
     
 }

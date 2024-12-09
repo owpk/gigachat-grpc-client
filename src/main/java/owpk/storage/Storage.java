@@ -10,6 +10,6 @@ public interface Storage {
     List<Content> getContents(String path) throws StorageException;
     void saveContents(List<Content> contents) throws StorageException;
     boolean exists(String path);
-    String createFileOrDir(String path);
+    String createFileOrDirIfNotExists(String path);
     boolean saveContent(String path, byte[] composedArray, boolean append) throws StorageException;
 }

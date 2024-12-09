@@ -9,18 +9,27 @@ public class FileUtils {
     /**
      * Returns true if file was created, false if it already exists
      */
-    public static boolean createFileWithDirs(Path path) {
+    public static boolean createFileWithDirs(String str) {
+        var path = Path.of(str);
         var parent = path.getParent();
         try {
             if (!Files.exists(parent)) {
-            var dirs = Files.createDirectories(parent);
-             if (!Files.exists(dirs))
-                throw new IllegalStateException("Couldn't create dir: " + path);
+                if (!Files.exists(Files.createDirectories(parent)))
+                    throw new IllegalStateException("Couldn't create parent dirs: " + parent);
             }
-            if (!Files.exists(path)) {
-                if (!Files.exists(Files.createFile(path)))
-                    throw new IllegalStateException("Couldn't create file: " + path);
-                return true;
+            if (str.endsWith("/")) {
+                if (!Files.exists(path)) {
+                    if (!Files.exists(Files.createDirectory(path)))
+                        throw new IllegalStateException("Couldn't create dir: " + path);
+                    return true;
+                }
+            }
+            else {
+                if (!Files.exists(path)) {
+                    if (!Files.exists(Files.createFile(path)))
+                        throw new IllegalStateException("Couldn't create file: " + path);
+                    return true;
+                }
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

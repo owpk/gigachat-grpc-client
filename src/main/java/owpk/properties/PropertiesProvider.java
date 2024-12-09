@@ -24,7 +24,7 @@ public abstract class PropertiesProvider {
         this.propertyName = propertyName;
 
         if (!storage.exists(propertyName)) {
-            storage.createFileOrDir(propertyName);
+            storage.createFileOrDirIfNotExists(propertyName);
             this.properties = createDefaults();
         } else {
             this.properties = loadProperties(propertyName);

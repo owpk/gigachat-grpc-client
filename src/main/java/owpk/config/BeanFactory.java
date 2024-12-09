@@ -23,7 +23,6 @@ import owpk.service.ChatHistoryService;
 import owpk.service.ChatService;
 import owpk.service.ChatServiceImpl;
 import owpk.service.RetryingChatWrapper;
-import owpk.storage.impl.LocalFileStorage;
 
 @Factory
 @Slf4j
@@ -45,7 +44,12 @@ public class BeanFactory {
 
     @Singleton
     public RolesService rolesStorage(MainProps props) {
-        return new RolesService(new LocalFileStorage(), props);
+        return new RolesService(mainProps().getStorage(), props);
+    }
+
+    @Singleton
+    public ChatHistoryService chatHistoryService(MainProps props) {
+       return new ChatHistoryService(props.getStorage(), props);
     }
 
     @Singleton
@@ -104,11 +108,6 @@ public class BeanFactory {
                                    ChatHistoryService historyService,
                                    MainProps mainSettingsStore) {
         return new ChatServiceImpl(gRpcClient, historyService, mainSettingsStore);
-    }
-
-    @Singleton
-    public ChatHistoryService chatHistoryService(MainProps mainSettingsStore) {
-       return new ChatHistoryService(mainSettingsStore);
     }
 
     @Singleton

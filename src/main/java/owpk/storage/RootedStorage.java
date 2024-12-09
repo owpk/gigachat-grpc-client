@@ -44,11 +44,13 @@ public class RootedStorage implements Storage {
     }
 
     @Override
-    public String createFileOrDir(String path) {
-        return delegate.createFileOrDir(concatePath(path));
+    public String createFileOrDirIfNotExists(String path) {
+        return delegate.createFileOrDirIfNotExists(concatePath(path));
     }
 
     private String concatePath(String path) {
+        if (storageRoot.endsWith("/"))
+                return storageRoot + path;
         return String.format("%s/%s", storageRoot, path);
     }
 

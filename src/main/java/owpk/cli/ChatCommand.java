@@ -86,7 +86,8 @@ public class ChatCommand implements Runnable {
 
     @CommandLine.Option(names = {"-h", "--help"}, defaultValue = "false", description = "Display help information.")
     public void setShowHelp(boolean showHelp) {
-        CommandLine.usage(this, System.out);
+        if (showHelp)
+            CommandLine.usage(this, System.out);
     }
 
     @CommandLine.Option(names = {"-n", "--new"},
