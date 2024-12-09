@@ -1,16 +1,15 @@
 package owpk.storage;
 
-import java.nio.file.Path;
+import java.util.List;
+
+import owpk.storage.domain.Content;
+import owpk.storage.domain.StorageException;
 
 public interface Storage {
-
-    Path createFile(String path);
-
-    byte[] readFile(String path);
-
-    void deleteFile(String path);
-
-    void writeFile(String path, byte[] content, boolean append);
-
+    byte[] getContent(String path) throws StorageException;
+    List<Content> getContents(String path) throws StorageException;
+    void saveContents(List<Content> contents) throws StorageException;
     boolean exists(String path);
+    String createFileOrDir(String path);
+    boolean saveContent(String path, byte[] composedArray, boolean append) throws StorageException;
 }

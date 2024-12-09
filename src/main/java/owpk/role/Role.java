@@ -1,4 +1,4 @@
-package owpk.settings.roles;
+package owpk.role;
 
 public record Role(
         String roleName,

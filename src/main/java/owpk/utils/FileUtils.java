@@ -12,8 +12,11 @@ public class FileUtils {
     public static boolean createFileWithDirs(Path path) {
         var parent = path.getParent();
         try {
-            if (!Files.exists(parent) && !Files.exists(Files.createDirectories(parent)))
+            if (!Files.exists(parent)) {
+            var dirs = Files.createDirectories(parent);
+             if (!Files.exists(dirs))
                 throw new IllegalStateException("Couldn't create dir: " + path);
+            }
             if (!Files.exists(path)) {
                 if (!Files.exists(Files.createFile(path)))
                     throw new IllegalStateException("Couldn't create file: " + path);

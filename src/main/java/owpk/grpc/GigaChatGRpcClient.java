@@ -1,5 +1,10 @@
 package owpk.grpc;
 
+import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
+
+import javax.net.ssl.SSLException;
+
 import gigachat.v1.ChatServiceGrpc;
 import gigachat.v1.Gigachatv1;
 import gigachat.v1.ModelsServiceGrpc;
@@ -9,10 +14,7 @@ import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NettyChannelBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import lombok.Getter;
-
-import javax.net.ssl.SSLException;
-import java.util.Iterator;
-import java.util.concurrent.TimeUnit;
+import owpk.properties.concrete.MainProps;
 
 
 public class GigaChatGRpcClient extends ModelsServiceGrpc.ModelsServiceImplBase {
@@ -23,9 +25,9 @@ public class GigaChatGRpcClient extends ModelsServiceGrpc.ModelsServiceImplBase 
     private final ModelsServiceGrpc.ModelsServiceBlockingStub modelStub;
     private final CallCredentials callCredentials;
 
-    public GigaChatGRpcClient(String target, JwtTokenProvider jwtTokenProvider) throws SSLException {
+    public GigaChatGRpcClient(MainProps props, JwtTokenProvider jwtTokenProvider) throws SSLException {
         this.jwtTokenProvider = jwtTokenProvider;
-        var channel = configureNettyChannel(target);
+        var channel = configureNettyChannel(props.getProperty(MainProps.DEF_TARGET));
         callCredentials = new GigaChatCreds(jwtTokenProvider);
         stub = ChatServiceGrpc.newBlockingStub(channel).withCallCredentials(callCredentials);
         modelStub = ModelsServiceGrpc.newBlockingStub(channel).withCallCredentials(callCredentials);

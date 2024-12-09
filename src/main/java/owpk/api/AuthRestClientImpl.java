@@ -1,34 +1,28 @@
 package owpk.api;
 
+import java.util.Date;
+import java.util.UUID;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.RequestBody;
+
 import lombok.extern.slf4j.Slf4j;
 import owpk.model.JwtRestResponse;
-import owpk.settings.main.MainSettings;
-import owpk.storage.app.MainSettingsStore;
-
-import java.util.Date;
-import java.util.UUID;
+import owpk.properties.concrete.MainProps;
 
 @Slf4j
 public class AuthRestClientImpl implements AuthRestClient {
-    private final MainSettings settings;
     private final OkHttpClient okHttp;
-    //    private final UnirestInstance unirest;
     private final ObjectMapper mapper = new ObjectMapper();
+    private final String authUi;
 
-    public AuthRestClientImpl(MainSettingsStore settings, OkHttpClient okHttp) {
-        this.settings = settings.getSettings();
+    public AuthRestClientImpl(MainProps settings, OkHttpClient okHttp) {
+        this.authUi = settings.getProperty(MainProps.DEF_AUTH_URI);
         this.okHttp = okHttp;
-        init();
-    }
-
-    private void init() {
-
     }
 
     @Override
@@ -43,7 +37,7 @@ public class AuthRestClientImpl implements AuthRestClient {
                     .header("RqUID", UUID.randomUUID().toString())
                     .header("Authorization", "Basic " + basicAuth)
                     .post(body)
-                    .url(settings.getAuthUri())
+                    .url(authUi)
                     .build();
 
             var response = okHttp.newCall(request).execute();

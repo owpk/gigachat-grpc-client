@@ -1,6 +1,12 @@
 package owpk.config;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
 import com.squareup.okhttp.OkHttpClient;
+
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.core.annotation.Order;
 import jakarta.inject.Singleton;
@@ -8,17 +14,16 @@ import lombok.extern.slf4j.Slf4j;
 import owpk.api.AuthRestClient;
 import owpk.api.AuthRestClientImpl;
 import owpk.grpc.GigaChatGRpcClient;
-import owpk.service.*;
-import owpk.storage.app.MainSettingsStore;
-import owpk.storage.app.RolesStorage;
-import picocli.CommandLine;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLException;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-
-import static owpk.Application.showApiDocsHelp;
+import owpk.properties.BootstrapPropertiesFactory;
+import owpk.properties.concrete.CredentialProps;
+import owpk.properties.concrete.MainProps;
+import owpk.role.RolesService;
+import owpk.service.AuthorizationRestService;
+import owpk.service.ChatHistoryService;
+import owpk.service.ChatService;
+import owpk.service.ChatServiceImpl;
+import owpk.service.RetryingChatWrapper;
+import owpk.storage.impl.LocalFileStorage;
 
 @Factory
 @Slf4j
@@ -26,22 +31,21 @@ public class BeanFactory {
 
     @Singleton
     @Order(value = Integer.MAX_VALUE)
-    public MainSettingsStore settingsStore() {
-        var settings = new MainSettingsStore();
-        settings.validate(() -> {
-            System.out.println(CommandLine.Help.Ansi.AUTO.string(
-                    "@|bold,fg(yellow) Specify your credentials!|@"));
-            showApiDocsHelp();
-            System.out.print("Input 'Basic' auth: ");
-        });
-        return settings;
+    public MainProps mainProps() {
+        return (MainProps) BootstrapPropertiesFactory.getInstance()
+            .getProvider(MainProps.class);
     }
 
     @Singleton
-    public RolesStorage rolesStorage() {
-        var rolesStore = new RolesStorage();
-        rolesStore.validate(() -> {});
-        return rolesStore;
+    @Order(value = Integer.MAX_VALUE - 1)
+    public CredentialProps credentialProps() {
+        return (CredentialProps) BootstrapPropertiesFactory.getInstance()
+            .getProvider(CredentialProps.class);
+    }
+
+    @Singleton
+    public RolesService rolesStorage(MainProps props) {
+        return new RolesService(new LocalFileStorage(), props);
     }
 
     @Singleton
@@ -81,35 +85,35 @@ public class BeanFactory {
     }
 
     @Singleton
-    public AuthRestClient authRestClient(OkHttpClient okHttpClient, MainSettingsStore settings) {
+    public AuthRestClient authRestClient(OkHttpClient okHttpClient, MainProps settings) {
         return new AuthRestClientImpl(settings, okHttpClient);
     }
 
     @Singleton
-    public AuthorizationRestService authorizationRestService(AuthRestClient authRestClient, MainSettingsStore mainSettingsStore) {
-        return new AuthorizationRestService(authRestClient, mainSettingsStore);
+    public AuthorizationRestService authorizationRestService(AuthRestClient authRestClient, CredentialProps credsProps) {
+        return new AuthorizationRestService(authRestClient, credsProps);
     }
 
     @Singleton
-    public GigaChatGRpcClient gRpcClient(AuthorizationRestService authorizationRestService, MainSettingsStore settings) throws SSLException {
-        return new GigaChatGRpcClient(settings.getSettings().getTarget(), authorizationRestService);
+    public GigaChatGRpcClient gRpcClient(AuthorizationRestService authorizationRestService, MainProps settings) throws SSLException {
+        return new GigaChatGRpcClient(settings, authorizationRestService);
     }
 
     @Singleton
     public ChatService chatService(GigaChatGRpcClient gRpcClient,
                                    ChatHistoryService historyService,
-                                   MainSettingsStore mainSettingsStore) {
+                                   MainProps mainSettingsStore) {
         return new ChatServiceImpl(gRpcClient, historyService, mainSettingsStore);
     }
 
     @Singleton
-    public ChatHistoryService chatHistoryService(MainSettingsStore mainSettingsStore) {
+    public ChatHistoryService chatHistoryService(MainProps mainSettingsStore) {
        return new ChatHistoryService(mainSettingsStore);
     }
 
     @Singleton
-    public RetryingChatWrapper retryingChatWrapper(MainSettingsStore mainSettingsStore, ChatService chatService,
+    public RetryingChatWrapper retryingChatWrapper(CredentialProps credentialProps, ChatService chatService,
                                                    AuthorizationRestService authorizationRestService) {
-        return new RetryingChatWrapper(mainSettingsStore, chatService, authorizationRestService);
+        return new RetryingChatWrapper(credentialProps, chatService, authorizationRestService);
     }
 }

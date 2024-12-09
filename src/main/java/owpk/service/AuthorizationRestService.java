@@ -1,32 +1,29 @@
 package owpk.service;
 
+import java.util.Date;
+
 import lombok.extern.slf4j.Slf4j;
 import owpk.GigaChatConstants;
 import owpk.api.AuthRestClient;
 import owpk.grpc.JwtTokenProvider;
 import owpk.model.JwtRestResponse;
-import owpk.settings.main.MainSettings;
-import owpk.storage.app.MainSettingsStore;
-
-import java.util.Date;
+import owpk.properties.concrete.CredentialProps;
 
 @Slf4j
 public class AuthorizationRestService implements JwtTokenProvider {
     private final AuthRestClient client;
-    private final MainSettings settings;
-    private final MainSettingsStore mainSettingsStore;
+    private final CredentialProps credentialProps;
 
-    public AuthorizationRestService(AuthRestClient client, MainSettingsStore mainSettingsStore) {
+    public AuthorizationRestService(AuthRestClient client, CredentialProps credsProps) {
         this.client = client;
-        this.settings = mainSettingsStore.getSettings();
-        this.mainSettingsStore = mainSettingsStore;
+        this.credentialProps = credsProps;
     }
 
     @Override
     public String getJwt() {
         log.info("JWT: Attempt to retrieve jwt token...");
 
-        var currentJwt = settings.getJwt();
+        var currentJwt = credentialProps.getJwt();
         if (currentJwt != null && currentJwt.getAccessToken() != null
                 && validateExpiration(currentJwt.getExpiresAt())) {
             log.info("JWT: Getting jwt from cache: " + currentJwt);
@@ -39,16 +36,13 @@ public class AuthorizationRestService implements JwtTokenProvider {
     @Override
     public JwtRestResponse refreshToken() {
         log.info("JWT: Attempting to refresh token...");
-        var jwt = client.authorize(GigaChatConstants.Scope.PERSONAL, settings.getComposedCredentials());
+        var jwt = client.authorize(GigaChatConstants.Scope.PERSONAL, credentialProps.getComposedCredentials());
         rewriteJwt(jwt);
         return jwt;
     }
 
     public void rewriteJwt(JwtRestResponse jwt) {
-        mainSettingsStore.setProperty("gigachat.jwt.accessToken", jwt.getAccessToken());
-        mainSettingsStore.setProperty("gigachat.jwt.expiresAt", jwt.getExpiresAt().toString());
-        settings.getJwt().setAccessToken(jwt.getAccessToken());
-        settings.getJwt().setExpiresAt(jwt.getExpiresAt());
+        credentialProps.rewriteJwt(jwt);
     }
 
     private boolean validateExpiration(Long expiresAt) {

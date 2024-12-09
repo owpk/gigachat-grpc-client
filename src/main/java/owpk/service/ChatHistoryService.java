@@ -1,21 +1,10 @@
 package owpk.service;
 
-import com.google.common.io.ByteStreams;
-import jdk.jshell.spi.ExecutionControl;
-import lombok.extern.slf4j.Slf4j;
-import owpk.Application;
-import owpk.model.ChatMessage;
-import owpk.settings.main.MainSettingField;
-import owpk.storage.LocalStorage;
-import owpk.storage.Storage;
-import owpk.storage.app.MainSettingsStore;
-import owpk.utils.FileUtils;
+import static owpk.GigaChatConstants.MessageRole.*;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,8 +12,14 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Predicate;
 
-import static owpk.GigaChatConstants.MessageRole.ASSISTANT;
-import static owpk.GigaChatConstants.MessageRole.USER;
+import com.google.common.io.ByteStreams;
+
+import lombok.extern.slf4j.Slf4j;
+import owpk.model.ChatMessage;
+import owpk.properties.concrete.MainProps;
+import owpk.storage.Storage;
+import owpk.storage.impl.LocalFileStorage;
+import owpk.utils.FileUtils;
 
 @Slf4j
 public class ChatHistoryService {
@@ -34,12 +29,14 @@ public class ChatHistoryService {
     private static final String ROLE_CHAT_PAT = formatRoll(ASSISTANT.getValue());
 
     private final Storage storage;
-    private final MainSettingsStore mainSettingsStore;
+    private final MainProps mainProps;
 
-    public ChatHistoryService(MainSettingsStore mainSettingsStore) {
-        Path CHAT_FILE_ROOT = Paths.get(Application.APP_HOME_DIR.toString(), "chats");
-        this.mainSettingsStore = mainSettingsStore;
-        this.storage = new LocalStorage(CHAT_FILE_ROOT);
+    // TODO check chat history mode, create according storage
+    public ChatHistoryService(MainProps mainProps) {
+        this.mainProps = mainProps;
+        var chatHome = mainProps.getProperty(MainProps.DEF_CHATS_HISTORY_HOME);
+        this.storage = new LocalFileStorage();
+        storage.createFileOrDir(chatHome);
     }
 
     private String createFileName() {
@@ -53,9 +50,8 @@ public class ChatHistoryService {
         log.info("Creating new chat...");
 
         String fileName = createFileName();
-        mainSettingsStore.setProperty(MainSettingField.CURRENT_CHAT.getPropertyKey(), fileName);
-        storage.createFile(fileName);
-
+        mainProps.setProperty(MainProps.DEF_CHATS_HISTORY_HOME, fileName);
+        storage.createFileOrDir(fileName);
         log.info("New chat created: {}", fileName);
         return fileName;
     }
@@ -99,7 +95,7 @@ public class ChatHistoryService {
 
     private List<ChatMessage> readLastMessages(Predicate<Integer> predicate, boolean reversed, boolean all) {
         var messages = new ArrayList<ChatMessage>();
-        var data = storage.readFile(getCurrentFileName());
+        var data = storage.getContent(getCurrentFileName());
         var chatTempFile = FileUtils.createTempFile(data, "chat_history" + UUID.randomUUID());
         try (var raf = new RandomAccessFile(chatTempFile.toFile(), "r")) {
             long fileLength = data.length;
@@ -161,26 +157,24 @@ public class ChatHistoryService {
             byte[] composedArray = new byte[body.length + roleBytes.length];
             System.arraycopy(roleBytes, 0, composedArray, 0, roleBytes.length);
             System.arraycopy(body, 0, composedArray, roleBytes.length, body.length);
-            storage.writeFile(getCurrentFileName(), composedArray, true);
+            storage.saveContent(getCurrentFileName(), composedArray, true);
     }
 
     public String getCurrentFileName() {
-        var name = mainSettingsStore.getProperty(MainSettingField.CURRENT_CHAT.getPropertyKey());
+        var name = mainProps.getProperty(MainProps.DEF_CURRENT_CHAT_NAME);
         if (name == null || name.isBlank()) {
             var chatName = createNewChat();
-            mainSettingsStore.setProperty(MainSettingField.CURRENT_CHAT.name(), chatName);
+            mainProps.setProperty(MainProps.DEF_CURRENT_CHAT_NAME, chatName);
             return chatName;
         }
         return name;
     }
 
     public void clearChatHistory() {
-        storage.writeFile(getCurrentFileName(), new byte[0], false);
+        storage.saveContent(getCurrentFileName(), new byte[0], false);
     }
 
-    // TODO implement new
     public List<ChatMessage> readAllMessages() {
-        log.info("asd");
         throw new RuntimeException("Not implemented yet");
     }
 }

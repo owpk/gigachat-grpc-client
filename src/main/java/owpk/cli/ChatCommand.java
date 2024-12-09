@@ -1,22 +1,26 @@
 package owpk.cli;
 
-import io.micronaut.logging.LogLevel;
-import io.micronaut.logging.LoggingSystem;
-import jakarta.inject.Inject;
-import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import owpk.role.*;
-import owpk.service.ChatHistoryService;
-import owpk.service.RetryingChatWrapper;
-import owpk.storage.app.RolesStorage;
-import owpk.utils.LoggingUtils;
-import picocli.CommandLine;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.function.Supplier;
 
-import static owpk.Application.showApiDocsHelp;
+import org.slf4j.Logger;
+
+import io.micronaut.logging.LogLevel;
+import io.micronaut.logging.LoggingSystem;
+import jakarta.inject.Inject;
+import lombok.extern.slf4j.Slf4j;
+import owpk.role.CodeRolePrompt;
+import owpk.role.DefaultChatRolePrompt;
+import owpk.role.DescribeRolePrompt;
+import owpk.role.RolePrompt;
+import owpk.role.RolesService;
+import owpk.role.ShellRolePrompt;
+import owpk.role.SystemRolePrompt;
+import owpk.service.ChatHistoryService;
+import owpk.service.RetryingChatWrapper;
+import owpk.utils.LoggingUtils;
+import picocli.CommandLine;
 
 @Slf4j
 @CommandLine.Command(versionProvider = VersionProvider.class, name = "gigachat",
@@ -25,7 +29,7 @@ import static owpk.Application.showApiDocsHelp;
 public class ChatCommand implements Runnable {
     private final LoggingSystem loggingSystem;
     private final RetryingChatWrapper retryingChatWrapper;
-    private final RolesStorage rolesStorage;
+    private final RolesService rolesStorage;
     private final ChatHistoryService chatHistoryService;
 
     private Supplier<RolePrompt> roleSupplier =
@@ -34,7 +38,7 @@ public class ChatCommand implements Runnable {
     @Inject
     public ChatCommand(LoggingSystem loggingSystem,
                        RetryingChatWrapper retryingChatWrapper,
-                       RolesStorage rolesStorage,
+                       RolesService rolesStorage,
                        ChatHistoryService chatHistoryService) {
         this.loggingSystem = loggingSystem;
         this.retryingChatWrapper = retryingChatWrapper;
@@ -82,14 +86,7 @@ public class ChatCommand implements Runnable {
 
     @CommandLine.Option(names = {"-h", "--help"}, defaultValue = "false", description = "Display help information.")
     public void setShowHelp(boolean showHelp) {
-        if (showHelp) {
-            showApiDocsHelp();
-            System.out.println("""
-                    \tYou need to write your credentials in 'gigachat.composedCredentials' property (or use config -d <credentials>)
-                    \tfind how to retrieve credentials: https://developers.sber.ru/docs/ru/gigachat/api/reference/rest/post-token
-                    """);
-            CommandLine.usage(this, System.out);
-        }
+        CommandLine.usage(this, System.out);
     }
 
     @CommandLine.Option(names = {"-n", "--new"},
@@ -137,7 +134,7 @@ public class ChatCommand implements Runnable {
             log.info("Error while reading piped input", e);
         }
         
-        role.setUserQuery(role.getUserQuery() + 
+        role.setUserQuery(role.getUserQuery() +
             (pipedInput.isEmpty() ? "" : " " + pipedInput));
 
         LoggingUtils.cliCommandLog(this.getClass(), log);
