@@ -24,7 +24,8 @@ else
        echo "Found newest version!: $VERSION"
        echo "------"
        echo "Downloading..."
-       REDIRECT=$( curl -I "https://github.com/owpk/gigachat-grpc-client/releases/download/$VERSION/gigachat" \
+       PLATFORM=$(uname -m)
+       REDIRECT=$( curl -I "https://github.com/owpk/gigachat-grpc-client/releases/download/$VERSION/gigachat-$PLATFORM" \
            | awk '/^location/ {print $2}' | sed -e 's/\n//g' | sed -e 's/\r//g')
        curl $REDIRECT --output $TARGET
        chmod +x $TARGET
