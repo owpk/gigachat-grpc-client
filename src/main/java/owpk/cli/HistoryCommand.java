@@ -7,7 +7,6 @@ import owpk.service.ChatHistoryService;
 import owpk.utils.LoggingUtils;
 import picocli.CommandLine;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j

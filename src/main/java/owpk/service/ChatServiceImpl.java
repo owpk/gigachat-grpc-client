@@ -1,33 +1,30 @@
 package owpk.service;
 
-import gigachat.v1.Gigachatv1;
-import lombok.extern.slf4j.Slf4j;
-import owpk.GigaChatConstants;
-import owpk.grpc.GigaChatGRpcClient;
-import owpk.role.RolePrompt;
-import owpk.settings.main.MainSettings;
-import owpk.storage.LocalStorage;
-import owpk.storage.Storage;
-import owpk.storage.app.MainSettingsStore;
-
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import gigachat.v1.Gigachatv1;
+import lombok.extern.slf4j.Slf4j;
+import owpk.GigaChatConstants;
+import owpk.grpc.GigaChatGRpcClient;
+import owpk.properties.concrete.MainProps;
+import owpk.role.RolePrompt;
+
 @Slf4j
 public class ChatServiceImpl implements ChatService {
     protected final GigaChatGRpcClient gigaChatGRpcClient;
-    protected final MainSettings mainSettings;
+    protected final MainProps mainProps;
     protected final ChatHistoryService chatHistoryService;
     private ChatRequestHandler chatRequestHandler;
 
     public ChatServiceImpl(GigaChatGRpcClient gigaChatGRpcClient,
                            ChatHistoryService chatHistoryService,
-                           MainSettingsStore mainSettingsStore) {
+                           MainProps mainProps) {
         this.gigaChatGRpcClient = gigaChatGRpcClient;
         this.chatHistoryService = chatHistoryService;
-        this.mainSettings = mainSettingsStore.getSettings();
+        this.mainProps = mainProps;
         this.chatRequestHandler = streamMode();
     }
 
@@ -74,7 +71,7 @@ public class ChatServiceImpl implements ChatService {
     protected Gigachatv1.ChatRequest createdRequest(Gigachatv1.Message userRequestMsg,
                                                     List<Gigachatv1.Message> additionalMessages) {
         return Gigachatv1.ChatRequest.newBuilder()
-                .setModel(mainSettings.getModel())
+                .setModel(mainProps.getProperty(MainProps.DEF_CURRENT_MODEL))
                 .addAllMessages(additionalMessages)
                 .addMessages(userRequestMsg)
                 .build();
