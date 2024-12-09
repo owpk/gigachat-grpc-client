@@ -2,9 +2,7 @@ package owpk.role;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
-import owpk.Application;
 import owpk.GigaChatConstants;
-import owpk.settings.roles.Role;
 
 @FieldDefaults(level = AccessLevel.PROTECTED)
 public abstract class SystemRolePrompt extends RolePrompt {
@@ -14,7 +12,7 @@ public abstract class SystemRolePrompt extends RolePrompt {
             @Override
             public String getRolePrompt() {
                 var prompt = defaultPrompt(role.roleName(), userQuery, role.prompt(), role.expected());
-                var os = prompt.replaceAll("\\{shell}", Application.osName);
+                var os = prompt.replaceAll("\\{shell}", "linux"); // TODO retrive os name
                 return os;
             }
         };

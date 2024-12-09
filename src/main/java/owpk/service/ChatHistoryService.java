@@ -1,21 +1,10 @@
 package owpk.service;
 
-import com.google.common.io.ByteStreams;
-import jdk.jshell.spi.ExecutionControl;
-import lombok.extern.slf4j.Slf4j;
-import owpk.Application;
-import owpk.model.ChatMessage;
-import owpk.settings.main.MainSettingField;
-import owpk.storage.LocalStorage;
-import owpk.storage.Storage;
-import owpk.storage.app.MainSettingsStore;
-import owpk.utils.FileUtils;
+import static owpk.GigaChatConstants.MessageRole.*;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,8 +12,13 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Predicate;
 
-import static owpk.GigaChatConstants.MessageRole.ASSISTANT;
-import static owpk.GigaChatConstants.MessageRole.USER;
+import com.google.common.io.ByteStreams;
+
+import lombok.extern.slf4j.Slf4j;
+import owpk.model.ChatMessage;
+import owpk.properties.concrete.MainProps;
+import owpk.storage.Storage;
+import owpk.utils.FileUtils;
 
 @Slf4j
 public class ChatHistoryService {
@@ -34,59 +28,33 @@ public class ChatHistoryService {
     private static final String ROLE_CHAT_PAT = formatRoll(ASSISTANT.getValue());
 
     private final Storage storage;
-    private final MainSettingsStore mainSettingsStore;
+    private final MainProps mainProps;
 
-    public ChatHistoryService(MainSettingsStore mainSettingsStore) {
-        Path CHAT_FILE_ROOT = Paths.get(Application.APP_HOME_DIR.toString(), "chats");
-        this.mainSettingsStore = mainSettingsStore;
-        this.storage = new LocalStorage(CHAT_FILE_ROOT);
+    // TODO check chat history mode, create according storage
+    public ChatHistoryService(Storage storage, MainProps mainProps) {
+        this.mainProps = mainProps;
+        this.storage = mainProps.getStorage();
+        createOrGetLastChat(this.storage);
     }
 
-    private String createFileName() {
-        return String.format("chat-%s-%s.md",
-                new SimpleDateFormat("yyyy-MM-dd")
-                        .format(System.currentTimeMillis()),
-                UUID.randomUUID());
+    public String createOrGetLastChat(Storage storage) {
+        var chatHome = mainProps.getProperty(MainProps.DEF_CHATS_HISTORY_HOME);
+        var lastChat = mainProps.getProperty(MainProps.DEF_CURRENT_CHAT_NAME);
+        if (lastChat == null || lastChat.isBlank()) {
+            lastChat = createFileName();
+            mainProps.setProperty(MainProps.DEF_CURRENT_CHAT_NAME, lastChat);
+            storage.createFileOrDirIfNotExists(chatHome + lastChat);
+        }
+        return lastChat;
     }
 
     public String createNewChat() {
         log.info("Creating new chat...");
-
         String fileName = createFileName();
-        mainSettingsStore.setProperty(MainSettingField.CURRENT_CHAT.getPropertyKey(), fileName);
-        storage.createFile(fileName);
-
+        mainProps.setProperty(MainProps.DEF_CHATS_HISTORY_HOME, fileName);
+        storage.createFileOrDirIfNotExists(fileName);
         log.info("New chat created: {}", fileName);
         return fileName;
-    }
-
-    private static String formatRoll(String pattern) {
-        return ROLE_PREFIX + "{" + pattern + "}" + ROLE_SUFFIX;
-    }
-
-    private static ArrayList<String> getStrings(String user, ArrayList<String> linesList,
-                                                ArrayList<ChatMessage> messages) {
-        Collections.reverse(linesList);
-        var rpcMsg = new ChatMessage(user,
-                String.join("", linesList));
-        messages.add(rpcMsg);
-        linesList = new ArrayList<>();
-        return linesList;
-    }
-
-    private static void reverse(byte[] array) {
-        if (array == null)
-            return;
-        int i = 0;
-        int j = array.length - 1;
-        byte tmp;
-        while (j > i) {
-            tmp = array[j];
-            array[j] = array[i];
-            array[i] = tmp;
-            j--;
-            i++;
-        }
     }
 
     public List<ChatMessage> readLastMessages(boolean reversed, boolean all) {
@@ -97,9 +65,31 @@ public class ChatHistoryService {
         return readLastMessages(it -> it >= msgCount, reversed, all);
     }
 
+    public void persistContentToHistory(String content, String role) {
+        var roleString = formatRoll(role);
+        var body = (content + "\n").getBytes(StandardCharsets.UTF_8);
+        var roleBytes = (roleString + "\n").getBytes();
+        byte[] composedArray = new byte[body.length + roleBytes.length];
+        System.arraycopy(roleBytes, 0, composedArray, 0, roleBytes.length);
+        System.arraycopy(body, 0, composedArray, roleBytes.length, body.length);
+        storage.saveContent(getCurrentFileName(), composedArray, true);
+    }
+
+    public String getCurrentFileName() {
+        return mainProps.getProperty(MainProps.DEF_CHATS_HISTORY_HOME) + mainProps.getProperty(MainProps.DEF_CURRENT_CHAT_NAME);
+    }
+
+    public void clearChatHistory() {
+        storage.saveContent(getCurrentFileName(), new byte[0], false);
+    }
+
+    public List<ChatMessage> readAllMessages() {
+        throw new RuntimeException("Not implemented yet");
+    }
+
     private List<ChatMessage> readLastMessages(Predicate<Integer> predicate, boolean reversed, boolean all) {
         var messages = new ArrayList<ChatMessage>();
-        var data = storage.readFile(getCurrentFileName());
+        var data = storage.getContent(getCurrentFileName());
         var chatTempFile = FileUtils.createTempFile(data, "chat_history" + UUID.randomUUID());
         try (var raf = new RandomAccessFile(chatTempFile.toFile(), "r")) {
             long fileLength = data.length;
@@ -154,33 +144,40 @@ public class ChatHistoryService {
         return role.substring(role.indexOf("{") + 1, role.lastIndexOf("}")).trim();
     }
 
-    public void persistContentToHistory(String content, String role) {
-        var roleString = formatRoll(role);
-        var body = (content + "\n").getBytes(StandardCharsets.UTF_8);
-            var roleBytes = (roleString + "\n").getBytes();
-            byte[] composedArray = new byte[body.length + roleBytes.length];
-            System.arraycopy(roleBytes, 0, composedArray, 0, roleBytes.length);
-            System.arraycopy(body, 0, composedArray, roleBytes.length, body.length);
-            storage.writeFile(getCurrentFileName(), composedArray, true);
+    private String createFileName() {
+        return String.format("chat-%s-%s.md",
+                new SimpleDateFormat("yyyy-MM-dd")
+                        .format(System.currentTimeMillis()),
+                UUID.randomUUID());
     }
 
-    public String getCurrentFileName() {
-        var name = mainSettingsStore.getProperty(MainSettingField.CURRENT_CHAT.getPropertyKey());
-        if (name == null || name.isBlank()) {
-            var chatName = createNewChat();
-            mainSettingsStore.setProperty(MainSettingField.CURRENT_CHAT.name(), chatName);
-            return chatName;
+    private static String formatRoll(String pattern) {
+        return ROLE_PREFIX + "{" + pattern + "}" + ROLE_SUFFIX;
+    }
+
+    private static ArrayList<String> getStrings(String user, ArrayList<String> linesList,
+                                                ArrayList<ChatMessage> messages) {
+        Collections.reverse(linesList);
+        var rpcMsg = new ChatMessage(user,
+                String.join("", linesList));
+        messages.add(rpcMsg);
+        linesList = new ArrayList<>();
+        return linesList;
+    }
+
+    private static void reverse(byte[] array) {
+        if (array == null)
+            return;
+        int i = 0;
+        int j = array.length - 1;
+        byte tmp;
+        while (j > i) {
+            tmp = array[j];
+            array[j] = array[i];
+            array[i] = tmp;
+            j--;
+            i++;
         }
-        return name;
     }
 
-    public void clearChatHistory() {
-        storage.writeFile(getCurrentFileName(), new byte[0], false);
-    }
-
-    // TODO implement new
-    public List<ChatMessage> readAllMessages() {
-        log.info("asd");
-        throw new RuntimeException("Not implemented yet");
-    }
 }
