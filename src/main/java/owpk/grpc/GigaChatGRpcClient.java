@@ -1,6 +1,7 @@
 package owpk.grpc;
 
 import java.util.Iterator;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLException;
@@ -10,13 +11,17 @@ import gigachat.v1.Gigachatv1;
 import gigachat.v1.ModelsServiceGrpc;
 import io.grpc.CallCredentials;
 import io.grpc.Channel;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NettyChannelBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import owpk.properties.concrete.MainProps;
 
 
+@Slf4j
 public class GigaChatGRpcClient extends ModelsServiceGrpc.ModelsServiceImplBase {
     private static final Integer DEFAULT_SSL_PORT = 443;
     @Getter
@@ -49,10 +54,31 @@ public class GigaChatGRpcClient extends ModelsServiceGrpc.ModelsServiceImplBase 
     }
 
     public Gigachatv1.ChatResponse chat(Gigachatv1.ChatRequest chatRequest) {
-        return stub.chat(chatRequest);
+        return catchUnauthorized(() -> stub.chat(chatRequest));
     }
 
     public Iterator<Gigachatv1.ChatResponse> chatStream(Gigachatv1.ChatRequest chatRequest) {
-        return stub.chatStream(chatRequest);
+        return catchUnauthorized(() -> stub.chatStream(chatRequest));
+    }
+
+    private <T> T catchUnauthorized(Callable<T> callable) {
+        try {
+            return callable.call();
+        } catch (StatusRuntimeException e) {
+            log.info("Catch grpc status exception: " + e.getStatus());
+            if (e.getStatus().getCode().equals(Status.UNAUTHENTICATED.getCode())) {
+                log.info("Seems jwt token is corrupted. Refreshing token...");
+                try {
+                    jwtTokenProvider.refreshToken();
+                    return callable.call();
+                } catch (Exception ex) {
+                    jwtTokenProvider.cleareToken();
+                    throw new RuntimeException("Error while refreshing token", ex);
+                }
+            } else throw e;
+        } catch (Throwable e) {
+            log.error("Catch retrying exception: " + e);
+            throw new RuntimeException(e);
+        }
     }
 }

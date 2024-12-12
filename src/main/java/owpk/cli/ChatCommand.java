@@ -18,7 +18,7 @@ import owpk.role.RolesService;
 import owpk.role.ShellRolePrompt;
 import owpk.role.SystemRolePrompt;
 import owpk.service.ChatHistoryService;
-import owpk.service.RetryingChatWrapper;
+import owpk.service.ChatService;
 import owpk.utils.LoggingUtils;
 import picocli.CommandLine;
 
@@ -28,7 +28,7 @@ import picocli.CommandLine;
         mixinStandardHelpOptions = true, subcommands = {ConfigCommand.class, ModelCommand.class, HistoryCommand.class})
 public class ChatCommand implements Runnable {
     private final LoggingSystem loggingSystem;
-    private final RetryingChatWrapper retryingChatWrapper;
+    private final ChatService chatService;
     private final RolesService rolesStorage;
     private final ChatHistoryService chatHistoryService;
 
@@ -37,11 +37,11 @@ public class ChatCommand implements Runnable {
 
     @Inject
     public ChatCommand(LoggingSystem loggingSystem,
-                       RetryingChatWrapper retryingChatWrapper,
+                       ChatService chatService,
                        RolesService rolesStorage,
                        ChatHistoryService chatHistoryService) {
         this.loggingSystem = loggingSystem;
-        this.retryingChatWrapper = retryingChatWrapper;
+        this.chatService= chatService;
         this.rolesStorage = rolesStorage;
         this.chatHistoryService = chatHistoryService;
     }
@@ -100,8 +100,8 @@ public class ChatCommand implements Runnable {
     @CommandLine.Option(names = {"-u", "--unary"},
             description = "Use unary response type. Default type is stream", defaultValue = "false")
     public void useUnary(boolean useUnary) {
-        if (useUnary) retryingChatWrapper.setUnaryMode();
-        else retryingChatWrapper.setStreamMode();
+        if (useUnary) chatService.setUnaryMode();
+        else chatService.setStreamMode();
     }
 
     @CommandLine.Option(names = "--log-level", description = "Set log level: ERROR | INFO | DEBUG",
@@ -139,6 +139,6 @@ public class ChatCommand implements Runnable {
             (pipedInput.isEmpty() ? "" : " " + pipedInput));
 
         LoggingUtils.cliCommandLog(this.getClass(), log);
-        retryingChatWrapper.chat(role);
+        chatService.chat(role);
     }
 }

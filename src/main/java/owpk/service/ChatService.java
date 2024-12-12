@@ -6,6 +6,8 @@ public interface ChatService {
 
     void chat(RolePrompt rolePrompt);
 
+    void setChatRequestHandler(ChatRequestHandler chatRequestHandler);
+
     void setUnaryMode();
 
     void setStreamMode();

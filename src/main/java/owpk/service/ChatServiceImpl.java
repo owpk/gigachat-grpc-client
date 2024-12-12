@@ -3,6 +3,7 @@ package owpk.service;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import gigachat.v1.Gigachatv1;
@@ -18,10 +19,15 @@ public class ChatServiceImpl implements ChatService {
     protected final MainProps mainProps;
     protected final ChatHistoryService chatHistoryService;
     private ChatRequestHandler chatRequestHandler;
+    private Consumer<String> streamOut;
+    private Consumer<String> unaryOut;
 
-    public ChatServiceImpl(GigaChatGRpcClient gigaChatGRpcClient,
-                           ChatHistoryService chatHistoryService,
-                           MainProps mainProps) {
+    public ChatServiceImpl(Consumer<String> streamOut, Consumer<String> unaryOut,
+            GigaChatGRpcClient gigaChatGRpcClient,
+            ChatHistoryService chatHistoryService,
+            MainProps mainProps) {
+        this.streamOut = streamOut;
+        this.unaryOut = unaryOut;
         this.gigaChatGRpcClient = gigaChatGRpcClient;
         this.chatHistoryService = chatHistoryService;
         this.mainProps = mainProps;
@@ -30,12 +36,17 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public void setStreamMode() {
-        chatRequestHandler = streamMode();
+        setChatRequestHandler(streamMode());
     }
 
     @Override
     public void setUnaryMode() {
-        chatRequestHandler = unaryMode();
+        setChatRequestHandler(unaryMode());
+    }
+
+    @Override
+    public synchronized void setChatRequestHandler(ChatRequestHandler chatRequestHandler) {
+        this.chatRequestHandler = chatRequestHandler;
     }
 
     // default mode is stream
@@ -47,9 +58,9 @@ public class ChatServiceImpl implements ChatService {
                 var msg = iterator.next();
                 var content = defaultHandleResponse(msg);
                 sw.append(content);
-                System.out.print(content);
+                streamOut.accept(content);
             }
-            System.out.println();
+            streamOut.accept("\n");
             return sw.toString();
         };
     }
@@ -58,7 +69,7 @@ public class ChatServiceImpl implements ChatService {
         return request -> {
             var response = gigaChatGRpcClient.chat(request);
             var content = defaultHandleResponse(response);
-            System.out.println(content);
+            unaryOut.accept(content);
             return content;
         };
     }
@@ -69,7 +80,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     protected Gigachatv1.ChatRequest createdRequest(Gigachatv1.Message userRequestMsg,
-                                                    List<Gigachatv1.Message> additionalMessages) {
+            List<Gigachatv1.Message> additionalMessages) {
         return Gigachatv1.ChatRequest.newBuilder()
                 .setModel(mainProps.getProperty(MainProps.DEF_CURRENT_MODEL))
                 .addAllMessages(additionalMessages)
@@ -132,8 +143,4 @@ public class ChatServiceImpl implements ChatService {
                 .collect(Collectors.joining(" "));
     }
 
-    @FunctionalInterface
-    public interface ChatRequestHandler {
-        String handleChatRequest(Gigachatv1.ChatRequest request);
-    }
 }
