@@ -36,10 +36,14 @@ public class CredentialProps extends PropertiesProvider {
     }
 
     public JwtRestResponse getJwt() {
-        return new JwtRestResponse(
-            getProperty(CredentialProps.DEF_JWT_ACCESS_TOKEN),
-            Long.valueOf(getProperty(CredentialProps.DEF_JWT_EXPIRES_AT))
-        );
+        var accessToken = getProperty(DEF_JWT_ACCESS_TOKEN);
+        var expiresAt = getProperty(DEF_JWT_EXPIRES_AT);
+        var expiresAtLongValue = 0L;
+
+        if (expiresAt != null && !expiresAt.isEmpty())
+            expiresAtLongValue = Long.parseLong(expiresAt);
+            
+        return new JwtRestResponse(accessToken, expiresAtLongValue);
     }
 
 

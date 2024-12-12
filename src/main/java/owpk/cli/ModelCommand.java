@@ -3,7 +3,6 @@ package owpk.cli;
 import jakarta.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import owpk.grpc.GigaChatGRpcClient;
-import owpk.properties.concrete.MainProps;
 import owpk.utils.LoggingUtils;
 import picocli.CommandLine;
 
@@ -11,12 +10,10 @@ import picocli.CommandLine;
 @Slf4j
 public class ModelCommand implements Runnable {
     private final GigaChatGRpcClient gigaChatGRpcClient;
-    private final MainProps mainProps;
 
     @Inject
-    public ModelCommand(GigaChatGRpcClient gigaChatGRpcClient, MainProps mainProps) {
+    public ModelCommand(GigaChatGRpcClient gigaChatGRpcClient) {
         this.gigaChatGRpcClient = gigaChatGRpcClient;
-        this.mainProps = mainProps;
     }
 
     @Override
@@ -24,6 +21,6 @@ public class ModelCommand implements Runnable {
         LoggingUtils.cliCommandLog(this.getClass(), log);
         var response = gigaChatGRpcClient.modelList();
         response.getModelsList().forEach(it ->
-                System.out.println(it.getName()));
+                ConsoleWriter.writeLn(it.getName()));
     }
 }

@@ -6,4 +6,6 @@ public interface JwtTokenProvider {
     String getJwt();
 
     JwtRestResponse refreshToken();
+
+    void cleareToken();
 }

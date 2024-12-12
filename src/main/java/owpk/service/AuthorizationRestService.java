@@ -2,6 +2,7 @@ package owpk.service;
 
 import java.util.Date;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import owpk.GigaChatConstants;
 import owpk.api.AuthRestClient;
@@ -10,6 +11,7 @@ import owpk.model.JwtRestResponse;
 import owpk.properties.concrete.CredentialProps;
 
 @Slf4j
+@Getter
 public class AuthorizationRestService implements JwtTokenProvider {
     private final AuthRestClient client;
     private final CredentialProps credentialProps;
@@ -51,5 +53,13 @@ public class AuthorizationRestService implements JwtTokenProvider {
             return currentTime < expiresAt;
         }
         return false;
+    }
+
+    @Override
+    public synchronized void cleareToken() {
+        var creds = credentialProps.getProperties();
+        creds.setProperty(CredentialProps.DEF_JWT_ACCESS_TOKEN.key(), "");
+        creds.setProperty(CredentialProps.DEF_JWT_EXPIRES_AT.key(), "");
+        credentialProps.storeProperties(creds);
     }
 }

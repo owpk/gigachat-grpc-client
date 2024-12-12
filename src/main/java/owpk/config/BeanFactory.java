@@ -13,6 +13,7 @@ import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import owpk.api.AuthRestClient;
 import owpk.api.AuthRestClientImpl;
+import owpk.cli.ConsoleWriter;
 import owpk.grpc.GigaChatGRpcClient;
 import owpk.properties.BootstrapPropertiesFactory;
 import owpk.properties.concrete.CredentialProps;
@@ -22,7 +23,6 @@ import owpk.service.AuthorizationRestService;
 import owpk.service.ChatHistoryService;
 import owpk.service.ChatService;
 import owpk.service.ChatServiceImpl;
-import owpk.service.RetryingChatWrapper;
 
 @Factory
 @Slf4j
@@ -107,12 +107,7 @@ public class BeanFactory {
     public ChatService chatService(GigaChatGRpcClient gRpcClient,
                                    ChatHistoryService historyService,
                                    MainProps mainSettingsStore) {
-        return new ChatServiceImpl(gRpcClient, historyService, mainSettingsStore);
-    }
-
-    @Singleton
-    public RetryingChatWrapper retryingChatWrapper(CredentialProps credentialProps, ChatService chatService,
-                                                   AuthorizationRestService authorizationRestService) {
-        return new RetryingChatWrapper(credentialProps, chatService, authorizationRestService);
+        return new ChatServiceImpl(out -> ConsoleWriter.write(out), out -> ConsoleWriter.writeLn(out),
+            gRpcClient, historyService, mainSettingsStore);
     }
 }
